@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fruit Catcher</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:100%;height:100%;overflow:hidden;background:#0d0520;font-family:'Courier New',monospace;}
+  #ui{position:fixed;bottom:0;left:0;width:100%;display:flex;justify-content:space-between;align-items:center;padding:6px 18px;background:#0d0520;border-top:2px solid #4c1d95;z-index:5;}
+  .stat{color:#c084fc;font-size:13px;font-weight:700;letter-spacing:1px;}
+  .val{color:#fff;}
+  #overlay{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(8,2,22,0.94);z-index:10;}
+  #overlay h1{font-size:clamp(18px,4vw,32px);color:#e040fb;letter-spacing:6px;margin-bottom:8px;}
+  #overlay .info{font-size:clamp(11px,2vw,15px);color:#c084fc;text-align:center;line-height:2.4;margin:12px 0;}
+  #overlay button{background:#3b0764;color:#e9c5ff;border:2px solid #9d4edd;padding:10px 30px;font-size:clamp(11px,2vw,14px);font-family:'Courier New',monospace;letter-spacing:3px;cursor:pointer;margin-top:12px;}
+  #overlay button:hover{background:#6b21a8;}
+  #overlay .gover{font-size:clamp(18px,4vw,30px);color:#e040fb;letter-spacing:5px;margin-bottom:8px;}
+  #overlay .gscore{font-size:clamp(14px,2.5vw,22px);color:#fff;margin:10px 0 4px;}
+  #overlay .glvl{font-size:clamp(10px,1.8vw,13px);color:#a855f7;margin-bottom:6px;}
+  #gc{position:fixed;top:0;left:0;display:block;image-rendering:pixelated;image-rendering:crisp-edges;}
+</style>
+</head>
+<body>
+<canvas id="gc"></canvas>
+<div id="ui">
+  <span class="stat">SCORE <span class="val" id="scoreEl">0</span></span>
+  <span class="stat">NIVEL <span class="val" id="levelEl">1</span></span>
+  <span class="stat">VIDAS <span class="val" id="livesEl">❤❤❤❤❤❤❤❤❤❤</span></span>
+</div>
+<div id="overlay">
+  <h1>FRUIT CATCHER</h1>
+  <div class="info">
+    ← → &nbsp;/&nbsp; A D &nbsp;para mover<br>
+    Recoge todas las frutas<br>
+    10 vidas · la velocidad sube con los puntos
+  </div>
+  <button id="btnStart">► JUGAR</button>
+</div>
+
+<script>
+// ── SPRITES 10×10 píxel a píxel ───────────────────────────────
+const SP = {
+  apple:{
+    p:{R:'#d62828',r:'#f47171',D:'#7a1010',G:'#2d6a4f',g:'#52b788',S:'#ffb3b3'},
+    g:['..GGg.....',
+       '....G.....',
+       '..RRRR....',
+       '.RRRRRr...',
+       'RRSRRrRR..',
+       'RRSRRrRR..',
+       'RRRRrrRR..',
+       '.RRDDRRR..',
+       '..RRRR....',
+       '...RR.....']},
+  banana:{
+    p:{Y:'#f9c74f',y:'#ffe49a',D:'#9a6200',d:'#6b4300',G:'#386641'},
+    g:['..GYY.....',
+       '.YYYYy....',
+       'YYYYyy....',
+       '.YYYyyy...',
+       '..YYyyy...',
+       '...YYyy...',
+       '...Yddd...',
+       '....ddd...',
+       '....dd....',
+       '..........']},
+  coconut:{
+    p:{B:'#7b5e3a',b:'#a07850',D:'#3e2c14',S:'#c9a96e',K:'#1a0800'},
+    g:['..BBBB....',
+       '.BBBBBb...',
+       'BBbBBBBb..',
+       'BbBSBBBb..',
+       'BBBBbBBB..',
+       'BKBBBKBb..',
+       'BBKBBBBb..',
+       '.BBBBBb...',
+       '..BBBB....',
+       '..........']},
+  watermelon:{
+    p:{G:'#2d9e44',g:'#52b788',R:'#e63946',r:'#f4717a',S:'#ffccd2',K:'#111'},
+    g:['.GGGGGG...',
+       'GGgGGGGG..',
+       'GRRRRRGg..',
+       'RRSRrRRRR.',
+       'RRRRrKRR..',
+       'RRRrKRRR..',
+       'RRRRRRRR..',
+       '.RRRRRRR..',
+       '..RRRRRR..',
+       '...RRRR...']},
+  orange:{
+    p:{O:'#f77f00',o:'#ffb347',D:'#b35900',G:'#2d6a4f',S:'#ffddb0'},
+    g:['...GG.....',
+       '..OOOO....',
+       '.OOOOOo...',
+       'OOSOOoOO..',
+       'OOSOOoOO..',
+       'OOOOooOO..',
+       'OOOOooOO..',
+       '.OODDOo...',
+       '..OOOO....',
+       '...OO.....']},
+  grapes:{
+    p:{P:'#9d4edd',p:'#c77dff',D:'#5a189a',S:'#ead4ff',G:'#386641',g:'#52b788'},
+    g:['....Gg....',
+       '...gGG....',
+       '.PpPP.....',
+       'PPSPpPp...',
+       'PPSPpPp...',
+       '.PpPPp....',
+       '..PPPp....',
+       '..PPPp....',
+       '...PP.....',
+       '..........']},
+  strawberry:{
+    p:{R:'#d62828',r:'#f47171',D:'#8b1a1a',S:'#ffb3b3',G:'#2d6a4f',g:'#52b788',Y:'#ffe066'},
+    g:['..GgGg....',
+       '..GGGG....',
+       '.RRRRRR...',
+       'RRSRrRRR..',
+       'RRSYrRRR..',
+       'RRRRrYRR..',
+       '.RRRRrR...',
+       '..RRRR....',
+       '...RR.....',
+       '..........']},
+  lime:{
+    p:{L:'#80b918',l:'#b5e545',D:'#4a7c10',G:'#2d6a4f',S:'#d8f07a'},
+    g:['...GG.....',
+       '..LLLL....',
+       '.LLLLLl...',
+       'LLSLLlLL..',
+       'LLSLLlLL..',
+       'LLLLllLL..',
+       'LLLLllLL..',
+       '.LLDDLl...',
+       '..LLLL....',
+       '...LL.....']},
+};
+
+const TINY={
+  '0':'111 101 101 101 111','1':'010 010 010 010 010','2':'111 001 111 100 111',
+  '3':'111 001 111 001 111','4':'101 101 111 001 001','5':'111 100 111 001 111',
+  '6':'100 100 111 101 111','7':'111 001 001 001 001','8':'111 101 111 101 111',
+  '9':'111 101 111 001 001','+':'000 010 111 010 000',
+};
+
+// ── CANVAS & SCALE ────────────────────────────────────────────
+const canvas = document.getElementById('gc');
+const C = canvas.getContext('2d');
+
+// Internal game resolution (fixed logical units)
+const CW = 320, CH = 200;
+// BW/BH = basket size in logical units
+const BW = 32, BH = 12;
+
+let SCALE = 1;   // logical → physical px multiplier
+let OX = 0;      // horizontal offset to center if letterboxed
+let OY = 0;      // vertical offset
+let GH = 0;      // game area height in screen px (excluding UI bar)
+let STARS = [];
+
+const uiEl = document.getElementById('ui');
+
+function resize(){
+  const uiH = uiEl.offsetHeight || 32;
+  const W = window.innerWidth;
+  const H = window.innerHeight - uiH;
+
+  // Scale to fill: stretch to fill while keeping aspect ratio
+  const scaleX = W  / CW;
+  const scaleY = H  / CH;
+  SCALE = Math.min(scaleX, scaleY);
+
+  // Canvas physical size = full available area
+  canvas.width  = W;
+  canvas.height = H;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+
+  // Center the game within the canvas if letterboxed
+  OX = (W  - CW * SCALE) / 2;
+  OY = (H  - CH * SCALE) / 2;
+  GH = H;
+
+  STARS = Array.from({length:50}, () => ({
+    x: Math.random() * CW,
+    y: Math.random() * (CH - 18)
+  }));
+
+  C.imageSmoothingEnabled = false;
+}
+
+window.addEventListener('resize', resize);
+
+// ── GAME STATE ────────────────────────────────────────────────
+const NAMES=['apple','banana','coconut','watermelon','orange','grapes','strawberry','lime'];
+const PTS  ={apple:10,banana:15,coconut:25,watermelon:20,orange:12,grapes:30,strawberry:18,lime:8};
+const PCOL ={apple:'#f47171',banana:'#ffe49a',coconut:'#a07850',watermelon:'#f4717a',
+             orange:'#ffb347',grapes:'#c77dff',strawberry:'#ffb3b3',lime:'#b5e545',miss:'#ff4444'};
+
+let basket, fruits, particles, popups, score, lives, level, state, fn, st;
+const keys = {};
+
+function dropSpeed(){ return 0.12 + (level-1) * 0.07; }
+function spawnEvery(){ return Math.max(60, 200 - (level-1) * 15); }
+
+function reset(){
+  basket = {x: CW/2 - BW/2, vx: 0};
+  fruits=[]; particles=[]; popups=[];
+  score=0; lives=10; level=1; fn=0; st=0;
+  state='playing';
+  uiUpdate();
+  document.getElementById('overlay').style.display='none';
+}
+
+function uiUpdate(){
+  document.getElementById('scoreEl').textContent = score;
+  document.getElementById('levelEl').textContent = level;
+  let h='';
+  for(let i=0;i<10;i++) h += i<lives ? '❤' : '♡';
+  document.getElementById('livesEl').textContent = h;
+}
+
+function spawn(){
+  const n = NAMES[Math.floor(Math.random()*NAMES.length)];
+  const v = dropSpeed() * (0.8 + Math.random()*0.4);
+  fruits.push({n, x: 4 + Math.random()*(CW-18), y: -12, vy: v});
+}
+
+function burst(x, y, n){
+  const c = PCOL[n] || '#fff';
+  for(let i=0;i<8;i++){
+    const a = Math.random()*Math.PI*2;
+    const s = 0.3 + Math.random()*0.8;
+    particles.push({x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s - 0.5, life:1, c});
+  }
+}
+
+// ── RENDER ───────────────────────────────────────────────────
+// All drawing uses logical coords; we apply a transform once at the start
+function render(){
+  C.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Fill letterbox bars with bg color
+  C.fillStyle = '#0d0520';
+  C.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Apply transform: translate to OX/OY, scale by SCALE
+  C.save();
+  C.translate(OX, OY);
+  C.scale(SCALE, SCALE);
+  // Now all coords below are in logical units (0..CW, 0..CH)
+
+  // Sky
+  C.fillStyle = '#1a0a2e';
+  C.fillRect(0, 0, CW, CH);
+
+  // Stars
+  for(const s of STARS){
+    const t = (Math.sin(fn*0.025 + s.x*0.3) + 1) / 2;
+    C.fillStyle = t > 0.55 ? '#ffffff' : '#7c4fa0';
+    C.fillRect(Math.floor(s.x), Math.floor(s.y), 1, 1);
+  }
+
+  // Side accent bars (pixel art style)
+  for(let y=6; y<CH-18; y+=8){
+    C.fillStyle = y%16 < 8 ? '#9d4edd' : '#ec4899';
+    C.fillRect(0, y, 2, 6);
+    C.fillRect(CW-2, y, 2, 6);
+  }
+
+  // Ground strip
+  for(let x=0; x<CW; x++){
+    C.fillStyle = x%4 < 2 ? '#4c1d95' : '#3b0764';
+    C.fillRect(x, CH-14, 1, 1);
+    C.fillStyle = x%4 < 2 ? '#6d28d9' : '#5b21b6';
+    C.fillRect(x, CH-13, 1, 4);
+    C.fillStyle = '#2e1065';
+    C.fillRect(x, CH-9, 1, 9);
+  }
+
+  // Fruits
+  for(const f of fruits){
+    const sp = SP[f.n];
+    const fx = Math.floor(f.x), fy = Math.floor(f.y);
+    for(let r=0; r<10; r++){
+      for(let c=0; c<10; c++){
+        const ch = sp.g[r][c];
+        if(ch==='.' || ch===' ') continue;
+        const col = sp.p[ch];
+        if(!col) continue;
+        C.fillStyle = col;
+        C.fillRect(fx+c, fy+r, 1, 1);
+      }
+    }
+  }
+
+  // Basket
+  const bx = Math.floor(basket.x), by = CH - 26;
+  // Rim
+  for(let x=0; x<BW; x++){
+    C.fillStyle = x%2===0 ? '#c084fc' : '#a855f7';
+    C.fillRect(bx+x, by, 1, 2);
+  }
+  // Woven body
+  const bcol=['#7c3aed','#6d28d9','#5b21b6','#4c1d95','#3b0764','#2e1065','#1e0a4a','#180944','#120838','#0e0630'];
+  const bwv =['#9d4edd','#7b2db8'];
+  for(let row=0; row<10; row++){
+    const indent = Math.floor(row/2);
+    const rowW   = BW - indent*2;
+    for(let col=0; col<rowW; col++){
+      C.fillStyle = (col%3===row%2) ? bwv[row%2] : bcol[row];
+      C.fillRect(bx+indent+col, by+2+row, 1, 1);
+    }
+  }
+  // Bottom shadow
+  C.fillStyle = '#0d0520';
+  for(let x=2; x<BW-2; x++) C.fillRect(bx+x, by+12, 1, 1);
+
+  // Particles
+  for(const p of particles){
+    C.globalAlpha = Math.max(0, p.life);
+    C.fillStyle   = p.c;
+    C.fillRect(Math.floor(p.x), Math.floor(p.y), 1, 1);
+  }
+  C.globalAlpha = 1;
+
+  // Score popups (tiny pixel font)
+  for(const pop of popups){
+    C.globalAlpha = Math.max(0, pop.life);
+    C.fillStyle   = '#ffe066';
+    let cx = Math.floor(pop.x), cy = Math.floor(pop.y);
+    for(const ch of ('+'+pop.pts)){
+      const pat = TINY[ch];
+      if(!pat){cx+=4;continue;}
+      const rows = pat.split(' ');
+      for(let r=0; r<rows.length; r++)
+        for(let c2=0; c2<rows[r].length; c2++)
+          if(rows[r][c2]==='1') C.fillRect(cx+c2, cy+r, 1, 1);
+      cx += 4;
+    }
+  }
+  C.globalAlpha = 1;
+
+  C.restore();
+}
+
+// ── GAME LOOP ─────────────────────────────────────────────────
+function loop(){
+  if(state !== 'playing'){ requestAnimationFrame(loop); return; }
+  fn++;
+
+  // Basket: very slow, smooth control
+  const MAX = 0.7;
+  if(keys['ArrowLeft']  || keys['a'] || keys['A']) basket.vx = Math.max(basket.vx - 0.15, -MAX);
+  else if(keys['ArrowRight'] || keys['d'] || keys['D']) basket.vx = Math.min(basket.vx + 0.15, MAX);
+  else basket.vx *= 0.6;
+  basket.x = Math.max(0, Math.min(CW - BW, basket.x + basket.vx));
+
+  // Spawn fruits
+  if(++st >= spawnEvery()){ spawn(); st=0; }
+
+  // Update fruits
+  const bx = basket.x, by = CH - 26;
+  for(let i = fruits.length-1; i >= 0; i--){
+    const f = fruits[i];
+    f.y += f.vy;
+    // Catch
+    if(f.y+9 > by && f.y < by+BH && f.x+8 > bx && f.x < bx+BW){
+      const pts = PTS[f.n];
+      score += pts;
+      burst(f.x+5, f.y+5, f.n);
+      popups.push({x: f.x, y: f.y, pts, life:1});
+      fruits.splice(i, 1);
+      level = 1 + Math.floor(score / 200);
+      uiUpdate();
+      continue;
+    }
+    // Missed
+    if(f.y > CH + 2){
+      lives--;
+      burst(f.x+5, CH-15, 'miss');
+      fruits.splice(i, 1);
+      uiUpdate();
+      if(lives <= 0){ gameOver(); return; }
+    }
+  }
+
+  // Update particles
+  for(let i = particles.length-1; i >= 0; i--){
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy; p.vy += 0.03; p.life -= 0.05;
+    if(p.life <= 0) particles.splice(i, 1);
+  }
+  // Update popups
+  for(let i = popups.length-1; i >= 0; i--){
+    popups[i].y  -= 0.2;
+    popups[i].life -= 0.04;
+    if(popups[i].life <= 0) popups.splice(i, 1);
+  }
+
+  render();
+  requestAnimationFrame(loop);
+}
+
+function gameOver(){
+  state = 'gameover';
+  const ov = document.getElementById('overlay');
+  ov.style.display = 'flex';
+  ov.innerHTML = `
+    <div class="gover">💀 GAME OVER</div>
+    <div style="color:#c084fc;font-size:clamp(10px,1.8vw,13px);letter-spacing:2px;margin-bottom:4px;">¡SE ACABARON LAS VIDAS!</div>
+    <div class="gscore">PUNTUACIÓN: <span style="color:#e040fb">${score}</span></div>
+    <div class="glvl">Nivel alcanzado: ${level}</div>
+    <button onclick="reset();loop()">► VOLVER A JUGAR</button>
+  `;
+}
+
+// ── INPUT ────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  keys[e.key] = true;
+  if(['ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
+});
+document.addEventListener('keyup', e => { keys[e.key] = false; });
+
+let touchX = null;
+canvas.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; }, {passive:true});
+canvas.addEventListener('touchmove', e => {
+  if(touchX === null) return;
+  // Convert screen delta → logical delta
+  const dx = (e.touches[0].clientX - touchX) / SCALE;
+  basket.x = Math.max(0, Math.min(CW - BW, basket.x + dx * 0.6));
+  touchX = e.touches[0].clientX;
+}, {passive:true});
+canvas.addEventListener('touchend', () => { touchX = null; }, {passive:true});
+
+// ── BOOT ─────────────────────────────────────────────────────
+document.getElementById('btnStart').onclick = () => { reset(); loop(); };
+
+resize();
+basket={x:CW/2-BW/2,vx:0}; fruits=[]; particles=[]; popups=[];
+score=0; lives=10; level=1; fn=0; st=0; state='menu';
+
+// Draw initial background
+render();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
