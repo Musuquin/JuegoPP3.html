@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IVAN PP3</title>
+    <style>
+        /* --- ESTILOS GENERALES --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a2e; /* Fondo oscuro tipo gaming */
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            color: #00d4ff;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+
+        p.intro {
+            color: #94a3b8;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        /* --- CONTENEDOR DE JUEGOS (GRID) --- */
+        .games-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px;
+        }
+
+        /* --- TARJETAS DE JUEGO --- */
+        .game-card {
+            background-color: #16213e;
+            border-radius: 15px;
+            overflow: hidden;
+            text-decoration: none;
+            color: white;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #0f3460;
+            display: block; /* Para que el enlace cubra toda la tarjeta */
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0, 212, 255, 0.3);
+            border-color: #00d4ff;
+        }
+
+        .game-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover; /* Ajusta la imagen sin deformarla */
+            border-bottom: 3px solid #00d4ff;
+        }
+
+        .game-card-content {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .game-card h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.5rem;
+            color: #00d4ff;
+        }
+
+        .game-card p {
+            font-size: 0.9rem;
+            color: #bdc3c7;
+            margin: 0;
+        }
+
+        /* --- RESPONSIVO --- */
+        @media (max-width: 600px) {
+            h1 { font-size: 2rem; }
+            .games-container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>IVAN PP3</h1>
+        <p class="intro">Welcome to the IVAN PP3 project! This is a placeholder page for the project. Stay tuned for updates and more information about IVAN PP3.</p>
+    </header>
+
+    <div class="games-container">
+        <a href="j1/index.html" class="game-card">
+            <img src="juego1.jpg" alt="Juego 1">
+            <div class="game-card-content">
+                <h2>Juego 1</h2>
+                <p>Descripción emocionante del primer juego de la lista.</p>
+            </div>
+        </a>
+
+        <a href="j2/index.html" class="game-card">
+            <img src="juego2.jpg" alt="Juego 2">
+            <div class="game-card-content">
+                <h2>Juego 2</h2>
+                <p>Una breve descripción de las mecánicas del juego 2.</p>
+            </div>
+        </a>
+
+        <a href="j3/juego3.html" class="game-card">
+            <img src="juego3.jpg" alt="Juego 3">
+            <div class="game-card-content">
+                <h2>Juego 3</h2>
+                <p>Explora nuevos mundos en esta tercera entrega.</p>
+            </div>
+        </a>
+
+        <a href="juego4.html" class="game-card">
+            <img src="juego4.jpg" alt="Juego 4">
+            <div class="game-card-content">
+                <h2>Juego 4</h2>
+                <p>El desafío final del proyecto IVAN PP3.</p>
+            </div>
+        </a>
+    </div>
+
+</body>
+</html>
