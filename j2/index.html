@@ -17,7 +17,8 @@ body{background:#000;overflow:hidden;font-family:'Segoe UI',sans-serif;}
 #shop-btn{margin-left:auto;padding:6px 18px;border-radius:20px;background:linear-gradient(135deg,#9333ea,#c026d3);color:#fff;border:none;font-weight:700;cursor:pointer;font-size:.82rem;pointer-events:all;box-shadow:0 2px 14px rgba(147,51,234,.4);transition:transform .12s;}
 #shop-btn:hover{transform:scale(1.06);}
 .screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:radial-gradient(ellipse at 50% 30%,#1a0533 0%,#020008 75%);pointer-events:all;}
-.screen h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:900;background:linear-gradient(135deg,#c084fc 0%,#e879f9 50%,#f9a8d4 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.screen h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:900;background:linear-gradient(135deg,#c084fc 0%,#e879f9 50%,#f9a8d4 100%);background-clip: text;
+-webkit-background-clip: text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .screen p{color:#9d8cb8;font-size:.95rem;max-width:380px;text-align:center;line-height:1.7;}
 .screen .hint{font-size:.78rem;color:#554466;}
 .btn{padding:14px 44px;border:none;border-radius:50px;font-size:1rem;font-weight:800;cursor:pointer;letter-spacing:.5px;background:linear-gradient(135deg,#9333ea,#c026d3);color:#fff;box-shadow:0 4px 24px rgba(147,51,234,.5);transition:transform .12s,box-shadow .12s;}
@@ -25,7 +26,8 @@ body{background:#000;overflow:hidden;font-family:'Segoe UI',sans-serif;}
 .score-big{font-size:2.4rem;font-weight:900;color:#fbbf24;}
 #msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(5,2,15,.92);border:2px solid #9333ea;border-radius:20px;padding:20px 50px;color:#c084fc;font-size:1.2rem;font-weight:800;display:none;pointer-events:none;white-space:nowrap;box-shadow:0 0 40px rgba(147,51,234,.35);}
 #lvl-banner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;display:none;}
-#lvl-banner h2{font-size:clamp(2.2rem,6vw,4rem);font-weight:900;background:linear-gradient(135deg,#c084fc,#e879f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+#lvl-banner h2{font-size:clamp(2.2rem,6vw,4rem);font-weight:900;background:linear-gradient(135deg,#c084fc,#e879f9);background-clip: text;
+-webkit-background-clip: text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 #lvl-banner p{color:#a78bfa;font-size:1rem;margin-top:6px;}
 #controls-hint{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);background:rgba(5,2,15,.7);border:1px solid rgba(147,51,234,.25);border-radius:30px;padding:6px 20px;font-size:.75rem;color:#664488;}
 
