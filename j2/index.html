@@ -17,8 +17,7 @@ body{background:#000;overflow:hidden;font-family:'Segoe UI',sans-serif;}
 #shop-btn{margin-left:auto;padding:6px 18px;border-radius:20px;background:linear-gradient(135deg,#9333ea,#c026d3);color:#fff;border:none;font-weight:700;cursor:pointer;font-size:.82rem;pointer-events:all;box-shadow:0 2px 14px rgba(147,51,234,.4);transition:transform .12s;}
 #shop-btn:hover{transform:scale(1.06);}
 .screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:radial-gradient(ellipse at 50% 30%,#1a0533 0%,#020008 75%);pointer-events:all;}
-.screen h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:900;background:linear-gradient(135deg,#c084fc 0%,#e879f9 50%,#f9a8d4 100%);background-clip: text;
--webkit-background-clip: text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.screen h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:900;background:linear-gradient(135deg,#c084fc 0%,#e879f9 50%,#f9a8d4 100%);background-clip: text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .screen p{color:#9d8cb8;font-size:.95rem;max-width:380px;text-align:center;line-height:1.7;}
 .screen .hint{font-size:.78rem;color:#554466;}
 .btn{padding:14px 44px;border:none;border-radius:50px;font-size:1rem;font-weight:800;cursor:pointer;letter-spacing:.5px;background:linear-gradient(135deg,#9333ea,#c026d3);color:#fff;box-shadow:0 4px 24px rgba(147,51,234,.5);transition:transform .12s,box-shadow .12s;}
@@ -26,12 +25,10 @@ body{background:#000;overflow:hidden;font-family:'Segoe UI',sans-serif;}
 .score-big{font-size:2.4rem;font-weight:900;color:#fbbf24;}
 #msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(5,2,15,.92);border:2px solid #9333ea;border-radius:20px;padding:20px 50px;color:#c084fc;font-size:1.2rem;font-weight:800;display:none;pointer-events:none;white-space:nowrap;box-shadow:0 0 40px rgba(147,51,234,.35);}
 #lvl-banner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;display:none;}
-#lvl-banner h2{font-size:clamp(2.2rem,6vw,4rem);font-weight:900;background:linear-gradient(135deg,#c084fc,#e879f9);background-clip: text;
--webkit-background-clip: text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+#lvl-banner h2{font-size:clamp(2.2rem,6vw,4rem);font-weight:900;background:linear-gradient(135deg,#c084fc,#e879f9);background-clip: text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 #lvl-banner p{color:#a78bfa;font-size:1rem;margin-top:6px;}
 #controls-hint{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);background:rgba(5,2,15,.7);border:1px solid rgba(147,51,234,.25);border-radius:30px;padding:6px 20px;font-size:.75rem;color:#664488;}
 
-/* SONAR / PROXIMITY HUD */
 #sonar-wrap{position:absolute;bottom:70px;right:24px;display:none;flex-direction:column;align-items:center;gap:6px;}
 #sonar-wrap.on{display:flex;}
 #sonar-label{color:#fbbf24;font-size:.7rem;font-weight:800;text-align:center;text-shadow:0 0 8px #fbbf24;}
@@ -39,7 +36,6 @@ body{background:#000;overflow:hidden;font-family:'Segoe UI',sans-serif;}
 #sonar-dot{width:12px;height:12px;border-radius:50%;background:#fbbf24;box-shadow:0 0 10px #fbbf24;transition:transform .2s;}
 #sonar-waves{position:absolute;inset:0;border-radius:50%;}
 
-/* LANTERN HUD */
 #lantern-hud{position:absolute;bottom:70px;left:120px;display:none;flex-direction:column;align-items:center;gap:4px;}
 #lantern-hud.on{display:flex;}
 #lantern-icon{font-size:2rem;filter:drop-shadow(0 0 8px #fbbf24);}
@@ -47,7 +43,6 @@ body{background:#000;overflow:hidden;font-family:'Segoe UI',sans-serif;}
 #lantern-status.lit{color:#fbbf24;text-shadow:0 0 6px #fbbf24;}
 #lantern-status.unlit{color:#554466;}
 
-/* TUTORIAL OVERLAY */
 #tutorial{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.82);pointer-events:all;z-index:20;}
 #tutorial.on{display:flex;}
 .tut-box{background:linear-gradient(160deg,#0f0520,#06021a);border:2px solid #e879f9;border-radius:24px;padding:32px 40px;max-width:480px;width:92%;text-align:center;}
@@ -57,20 +52,17 @@ body{background:#000;overflow:hidden;font-family:'Segoe UI',sans-serif;}
 .tut-box .hint-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:14px 0;}
 .tut-box .key-hint{background:rgba(147,51,234,.2);border:1px solid rgba(192,132,252,.4);border-radius:10px;padding:6px 14px;color:#c084fc;font-size:.8rem;font-weight:700;}
 
-/* TOOL indicator HUD */
 #tool-hud{position:absolute;bottom:70px;left:24px;display:none;flex-direction:column;align-items:center;gap:4px;}
 #tool-hud.on{display:flex;}
 #tool-icon{font-size:2rem;filter:drop-shadow(0 0 8px #fbbf24);}
 #tool-name{color:#fbbf24;font-size:.7rem;font-weight:800;text-shadow:0 0 6px #fbbf24;}
 
-/* DIG bar */
 #dig-bar-wrap{position:absolute;bottom:110px;left:50%;transform:translateX(-50%);display:none;flex-direction:column;align-items:center;gap:4px;}
 #dig-bar-wrap.on{display:flex;}
 #dig-label{color:#fbbf24;font-size:.76rem;font-weight:800;}
 #dig-bar-bg{width:180px;height:16px;border-radius:8px;background:rgba(0,0,0,.5);border:2px solid rgba(251,191,36,.4);overflow:hidden;}
 #dig-bar-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#f59e0b,#fbbf24);width:0%;transition:width .15s;}
 
-/* shop */
 #shop-modal{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);pointer-events:all;}
 #shop-modal.on{display:flex;}
 .shop-box{background:linear-gradient(160deg,#170730,#060212);border:1.5px solid rgba(147,51,234,.4);border-radius:22px;padding:30px;max-width:560px;width:95%;max-height:88vh;overflow-y:auto;}
@@ -129,7 +121,6 @@ body{background:#000;overflow:hidden;font-family:'Segoe UI',sans-serif;}
   <div id="lvl-banner"><h2 id="lbt"></h2><p id="lbs"></p></div>
   <div id="controls-hint">WASD · Flechas — Mover &nbsp;|&nbsp; Arrastra — Rotar cámara &nbsp;|&nbsp; <b id="dig-hint" style="color:#fbbf24;display:none">E — Cavar</b> &nbsp;<b id="lantern-hint" style="color:#fbbf24;display:none">· F — Linterna</b></div>
 
-  <!-- Sonar proximity indicator -->
   <div id="sonar-wrap">
     <div id="sonar-ring">
       <canvas id="sonar-waves" width="70" height="70"></canvas>
@@ -138,25 +129,21 @@ body{background:#000;overflow:hidden;font-family:'Segoe UI',sans-serif;}
     <div id="sonar-label">👂 Escucha</div>
   </div>
 
-  <!-- Lantern HUD -->
   <div id="lantern-hud">
     <div id="lantern-icon">🔦</div>
     <div id="lantern-status" class="lit">LINTERNA ON</div>
   </div>
 
-  <!-- Tool indicator -->
   <div id="tool-hud">
     <div id="tool-icon">⛏️</div>
     <div id="tool-name">PALA</div>
   </div>
 
-  <!-- Dig progress bar -->
   <div id="dig-bar-wrap">
     <div id="dig-label">⛏️ Cavando...</div>
     <div id="dig-bar-bg"><div id="dig-bar-fill"></div></div>
   </div>
 
-  <!-- Tutorial overlay -->
   <div id="tutorial">
     <div class="tut-box">
       <h2 id="tut-title">🎓 ¡Tutorial!</h2>
@@ -172,7 +159,6 @@ body{background:#000;overflow:hidden;font-family:'Segoe UI',sans-serif;}
     </div>
   </div>
 
-  <!-- Shop -->
   <div id="shop-modal">
     <div class="shop-box">
       <h2>🎩 Tienda de Gorritos</h2>
@@ -273,10 +259,9 @@ function playFoundSound(){
 // ══════════════════════════════════════════════
 const COLS=18,ROWS=14,TILE=2.4,WALL_H=2.2,PLAYER_SPEED=5.5,CAM_DIST=18,CAM_ANGLE=Math.PI/3.8;
 
-// Hitbox radii per theme — forest trees use trunk radius only
 const THEME_HITBOX={
   meadow: 0.55,
-  forest: 0.28,   // smaller: adapts to trunk width
+  forest: 0.28,
   sand:   0.52,
   snow:   0.50,
   cave:   0.48,
@@ -309,26 +294,36 @@ const camera=new THREE.PerspectiveCamera(55,1,0.1,300);
 function resize(){const w=window.innerWidth,h=window.innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
 window.addEventListener('resize',resize);resize();
 
-// Lights
+// Global lights
 const ambient=new THREE.AmbientLight(0xffffff,0.5);scene.add(ambient);
-const sun=new THREE.DirectionalLight(0xfff0d0,1.4);sun.position.set(8,18,10);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.near=1;sun.shadow.camera.far=80;sun.shadow.camera.left=sun.shadow.camera.bottom=-30;sun.shadow.camera.right=sun.shadow.camera.top=30;sun.shadow.bias=-0.001;scene.add(sun);
+const sun=new THREE.DirectionalLight(0xfff0d0,1.4);
+sun.position.set(8,18,10);sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);
+sun.shadow.camera.near=1;sun.shadow.camera.far=80;
+sun.shadow.camera.left=sun.shadow.camera.bottom=-30;
+sun.shadow.camera.right=sun.shadow.camera.top=30;
+sun.shadow.bias=-0.001;scene.add(sun);
 const fill=new THREE.DirectionalLight(0x8080ff,0.3);fill.position.set(-10,8,-6);scene.add(fill);
 const pointLight=new THREE.PointLight(0xfbbf24,2,8);scene.add(pointLight);
 
-// ── LANTERN LIGHTS (follows player, toggleable) ──
-// MeshToonMaterial only responds to AmbientLight and DirectionalLight in THREE r128.
-// We simulate lantern with a controlled AmbientLight + weak DirectionalLight that moves with player.
-const lanternAmbient=new THREE.AmbientLight(0xffd280,0); // warm ambient lantern
-scene.add(lanternAmbient);
-const lanternPoint=new THREE.PointLight(0xffd280,0,20); // for non-toon objects
-scene.add(lanternPoint);
-// Fake "local" light using a dim directional that we repoint each frame
-const lanternDir=new THREE.DirectionalLight(0xffc870,0);
-lanternDir.position.set(0,10,0);
-scene.add(lanternDir);
-scene.add(lanternDir.target);
-let lanternOn=true;
-let lanternMesh=null;
+// ── LANTERN: SpotLight that follows player ──
+// SpotLight works properly with MeshToonMaterial in THREE r128
+const lanternSpot = new THREE.SpotLight(0xffd280, 0, 35, Math.PI / 3.5, 0.25, 1.2);
+lanternSpot.castShadow = false; // no shadow for perf
+scene.add(lanternSpot);
+scene.add(lanternSpot.target);
+
+// Extra fill point light for cave lantern so nearby walls are visible
+const lanternFill = new THREE.PointLight(0xffd060, 0, 14);
+scene.add(lanternFill);
+
+// Soft ambient for cave (very dim baseline so you're not completely blind)
+const caveAmbient = new THREE.AmbientLight(0x1a0830, 0);
+scene.add(caveAmbient);
+
+let lanternOn = true;
+let lanternMesh = null;
+let isCaveLevel = false;
 
 // ══════════════════════════════════════════════
 //  STATE
@@ -351,7 +346,8 @@ const player={
 };
 
 // ══════════════════════════════════════════════
-//  MATERIALS
+//  MATERIALS — cave uses MeshStandardMaterial
+//  so PointLight/SpotLight actually work
 // ══════════════════════════════════════════════
 const M={
   skin:   new THREE.MeshToonMaterial({color:0xffd4a8}),
@@ -371,6 +367,11 @@ const M={
   hatGreen:new THREE.MeshToonMaterial({color:0x15803d}),
   feather:new THREE.MeshToonMaterial({color:0xf9a8d4}),
 };
+
+// Cave-specific Standard materials (respond to SpotLight/PointLight)
+function caveMat(color, emissive=0x000000, emissiveInt=0){
+  return new THREE.MeshStandardMaterial({color, emissive, emissiveIntensity:emissiveInt, roughness:0.85, metalness:0.1});
+}
 
 // ══════════════════════════════════════════════
 //  BUILD CHIBI CHARACTER
@@ -458,13 +459,11 @@ function buildPlayer(){
   const feather=new THREE.Mesh(new THREE.CylinderGeometry(.025,.01,.44,6),M.feather.clone());feather.position.set(H*.44,.32,0);feather.rotation.z=.4;top.add(feather);
   player.hatGroup=brim;
 
-  // Tool group on right arm
   const toolGrp=new THREE.Group();
   toolGrp.position.set(0,-ARM_H*0.55,0);
   rArm.add(toolGrp);
   player.toolGroup=toolGrp;
 
-  // Lantern group on left arm (hidden until lantern levels)
   const lanternGrp=new THREE.Group();
   lanternGrp.position.set(0,-ARM_H*0.55,0);
   lanternGrp.visible=false;
@@ -481,23 +480,17 @@ function buildPlayer(){
   scene.add(g);
 }
 
-// Build 3D lantern mesh
 function buildLanternMesh(grp){
-  // body
   const body=new THREE.Mesh(new THREE.BoxGeometry(.14,.2,.14),new THREE.MeshToonMaterial({color:0x78350f}));
   body.position.y=-.1;grp.add(body);
-  // glass panels (slightly transparent warm)
-  const glassM=new THREE.MeshToonMaterial({color:0xfef08a,transparent:true,opacity:.7,emissive:0xfef08a,emissiveIntensity:.8});
+  const glassM=new THREE.MeshToonMaterial({color:0xfef08a,transparent:true,opacity:.9,emissive:0xfef08a,emissiveIntensity:1.2});
   [[.074,0,0,0],[-.074,0,0,Math.PI],[0,0,.074,Math.PI/2],[0,0,-.074,-Math.PI/2]].forEach(([x,y,z,ry])=>{
     const p=new THREE.Mesh(new THREE.PlaneGeometry(.13,.18),glassM.clone());
     p.position.set(x,-.1,z);p.rotation.y=ry;grp.add(p);
   });
-  // top cap
   const cap=new THREE.Mesh(new THREE.CylinderGeometry(.09,.08,.06,8),new THREE.MeshToonMaterial({color:0x92400e}));cap.position.y=.01;grp.add(cap);
-  // handle
   const handle=new THREE.Mesh(new THREE.TorusGeometry(.06,.015,6,10,Math.PI),new THREE.MeshToonMaterial({color:0x78350f}));
   handle.position.set(.07,.02,0);handle.rotation.z=-Math.PI/2;grp.add(handle);
-  // bottom
   const bot=new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,.04,8),new THREE.MeshToonMaterial({color:0x92400e}));bot.position.y=-.21;grp.add(bot);
 }
 
@@ -530,11 +523,12 @@ function equipTool(idx){
     player.toolGroup.remove(player.toolMesh);
     player.toolMesh=null;
   }
-  // Hide lantern by default
   if(lanternMesh)lanternMesh.visible=false;
-  lanternAmbient.intensity=0;
-  lanternDir.intensity=0;
-  lanternPoint.intensity=0;
+
+  // Disable all lantern lights
+  setLanternLights(false);
+  isCaveLevel=false;
+
   document.getElementById('lantern-hud').classList.remove('on');
   document.getElementById('lantern-hint').style.display='none';
 
@@ -554,35 +548,45 @@ function equipTool(idx){
   document.getElementById('tool-hud').classList.add('on');
   document.getElementById('dig-hint').style.display='inline';
 
-  // Enable lantern for cave levels
   if(LEVELS[idx].hasLantern){
+    isCaveLevel=true;
     if(lanternMesh)lanternMesh.visible=true;
     lanternOn=true;
-    lanternAmbient.intensity=1.8;
-    lanternDir.intensity=1.2;
-    lanternPoint.intensity=4.0;
+    setLanternLights(true);
     document.getElementById('lantern-hud').classList.add('on');
     document.getElementById('lantern-hint').style.display='inline';
     updateLanternHUD();
   }
 }
 
+// ── LANTERN LIGHT CONTROL ──
+// Uses SpotLight (position = player, target = where player faces)
+// + PointLight fill for nearby walls
+// + tiny cave ambient so you're not 100% blind if lantern off
+function setLanternLights(on){
+  if(on){
+    lanternSpot.intensity = 3.5;
+    lanternFill.intensity = 1.8;
+    caveAmbient.intensity = 0.12;
+  } else {
+    lanternSpot.intensity = 0;
+    lanternFill.intensity = 0;
+    caveAmbient.intensity = 0;
+  }
+}
+
 function toggleLantern(){
   if(!LEVELS[lvlIdx].hasLantern)return;
   lanternOn=!lanternOn;
-  if(lanternOn){
-    lanternAmbient.intensity=1.8;
-    lanternDir.intensity=1.2;
-    lanternPoint.intensity=4.0;
-  } else {
-    lanternAmbient.intensity=0;
-    lanternDir.intensity=0;
-    lanternPoint.intensity=0;
+  setLanternLights(lanternOn);
+  if(!lanternOn){
+    // When off, keep a tiny ambient so you can vaguely see
+    caveAmbient.intensity = 0.06;
   }
   if(lanternMesh){
     lanternMesh.traverse(o=>{
       if(o.isMesh&&o.material&&o.material.emissiveIntensity!==undefined){
-        o.material.emissiveIntensity=lanternOn?.8:.05;
+        o.material.emissiveIntensity=lanternOn?1.2:.05;
       }
     });
   }
@@ -647,13 +651,29 @@ function animatePlayer(dt){
     setTimeout(()=>{if(player.eyeL){player.eyeL.scale.set(1,1.15,.25);player.eyeR.scale.set(1,1.15,.25);}},90);
   }
 
-  // Update lantern lights to follow player
-  if(LEVELS[lvlIdx].hasLantern){
-    lanternPoint.position.set(player.pos.x,1.2,player.pos.z);
-    // Point directional light from above player position
-    lanternDir.position.set(player.pos.x,12,player.pos.z);
-    lanternDir.target.position.set(player.pos.x,0,player.pos.z);
-    lanternDir.target.updateMatrixWorld();
+  // ── UPDATE LANTERN LIGHTS to follow player ──
+  if(isCaveLevel){
+    const px=player.pos.x;
+    const pz=player.pos.z;
+    const py=1.0; // height of lantern
+
+    // SpotLight positioned at player, aimed in facing direction
+    lanternSpot.position.set(px, py + 0.3, pz);
+    const facingX = Math.sin(player.facingAngle);
+    const facingZ = Math.cos(player.facingAngle);
+    // Target ~12 units ahead in facing direction
+    lanternSpot.target.position.set(px + facingX * 12, 0, pz + facingZ * 12);
+    lanternSpot.target.updateMatrixWorld();
+
+    // Fill light: centred on player, illuminates nearby walls/floor
+    lanternFill.position.set(px, py, pz);
+
+    // Flicker
+    if(lanternOn){
+      const flicker = 1.0 + Math.sin(Date.now()*0.009)*0.06 + (Math.random()-0.5)*0.04;
+      lanternSpot.intensity = 3.5 * flicker;
+      lanternFill.intensity = 1.8 * flicker;
+    }
   }
 }
 
@@ -680,10 +700,7 @@ function placeTreasure(g,p){
 }
 function worldPos(gx,gy){return new THREE.Vector3(gx*TILE+TILE*.5,0,gy*TILE+TILE*.5);}
 
-// ── SAFE SPAWN POSITION ──
-// Find a clear cell near (1,1) guaranteed to be walkable
 function findSafeSpawn(g){
-  // Try cells in expanding radius from (1,1)
   for(let r=0;r<ROWS;r++){
     for(let c=0;c<COLS;c++){
       if(!g[r][c]){
@@ -731,9 +748,10 @@ const THEME_CFG={
     skyDome:true, skyTop:0x38bdf8, skyBot:0xe0f2fe,
   },
   cave:{
-    fog:0x000000, fogDensity:.18,
+    // ── FIX: much lower fog density so you can actually see the lantern beam ──
+    fog:0x050010, fogDensity:0.045,
     bg:0x000000,
-    sunColor:0x100820, sunInt:.04, ambInt:.03,
+    sunColor:0x100820, sunInt:.01, ambInt:.02, // nearly off — lantern is the light source
     floor:0x0a0818, floorAlt:0x120e28,
     wallColor:0x0d0b1e,
     skyDome:false,
@@ -749,6 +767,7 @@ function buildScene(lvlData){
   const theme=lvlData.theme;
   const cfg=THEME_CFG[theme];
   const rng=makeRng(lvlIdx*997+42);
+  const isCave=(theme==='cave');
 
   scene.fog=new THREE.FogExp2(cfg.fog,cfg.fogDensity);
   renderer.setClearColor(cfg.bg);
@@ -766,17 +785,25 @@ function buildScene(lvlData){
   }
 
   const floorSize=COLS*TILE,floorDepth=ROWS*TILE;
+
+  // ── Cave floor uses MeshStandardMaterial so lantern light hits it ──
+  const floorMat = isCave
+    ? caveMat(cfg.floor)
+    : new THREE.MeshToonMaterial({color:cfg.floor});
+
   const floorGeo=new THREE.PlaneGeometry(floorSize,floorDepth,COLS*2,ROWS*2);
-  const floorM=new THREE.MeshToonMaterial({color:cfg.floor});
-  const floor=new THREE.Mesh(floorGeo,floorM);
+  const floor=new THREE.Mesh(floorGeo,floorMat);
   floor.rotation.x=-Math.PI/2;floor.position.set(floorSize/2,.0,floorDepth/2);
   floor.receiveShadow=true;sceneGroup.add(floor);
 
   for(let r=0;r<ROWS;r++){
     for(let c=0;c<COLS;c++){
       if(rng()<.25){
-        const tileM=new THREE.MeshToonMaterial({color:cfg.floorAlt,transparent:true,opacity:.4});
-        const tile=new THREE.Mesh(new THREE.PlaneGeometry(TILE*.9,TILE*.9),tileM);
+        const tileColor = new THREE.Color(cfg.floorAlt);
+        const tileMat = isCave
+          ? new THREE.MeshStandardMaterial({color:tileColor,roughness:0.9,metalness:0.0,transparent:true,opacity:.4})
+          : new THREE.MeshToonMaterial({color:cfg.floorAlt,transparent:true,opacity:.4});
+        const tile=new THREE.Mesh(new THREE.PlaneGeometry(TILE*.9,TILE*.9),tileMat);
         tile.rotation.x=-Math.PI/2;tile.position.set(c*TILE+TILE*.5,.01,r*TILE+TILE*.5);
         sceneGroup.add(tile);
       }
@@ -785,12 +812,37 @@ function buildScene(lvlData){
 
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(grid[r][c])buildObstacle(theme,c*TILE+TILE*.5,r*TILE+TILE*.5,rng);}
 
-  const bWallM=new THREE.MeshToonMaterial({color:cfg.wallColor});
+  // ── Cave ceiling (adds atmosphere and stops seeing through top) ──
+  if(isCave){
+    const ceilMat=caveMat(0x080614);
+    const ceil=new THREE.Mesh(new THREE.PlaneGeometry(floorSize,floorDepth),ceilMat);
+    ceil.rotation.x=Math.PI/2;ceil.position.set(floorSize/2, WALL_H*1.5, floorDepth/2);
+    sceneGroup.add(ceil);
+
+    // Stalactites for atmosphere
+    for(let i=0;i<30;i++){
+      const cx=rng()*floorSize;const cz=rng()*floorDepth;
+      const gx=Math.floor(cx/TILE);const gz=Math.floor(cz/TILE);
+      if(gx>=0&&gx<COLS&&gz>=0&&gz<ROWS&&!grid[gz][gx]){
+        const h=0.4+rng()*0.8;
+        const stalM=caveMat(0x1a1035);
+        const stal=new THREE.Mesh(new THREE.ConeGeometry(0.08+rng()*0.12,h,6),stalM);
+        stal.rotation.x=Math.PI;
+        stal.position.set(cx, WALL_H*1.5-h*0.5, cz);
+        sceneGroup.add(stal);
+      }
+    }
+  }
+
+  const bWallMat = isCave
+    ? caveMat(cfg.wallColor)
+    : new THREE.MeshToonMaterial({color:cfg.wallColor});
+
   for(let c=0;c<COLS;c++){
-    [-0.5,ROWS-.5].forEach(rr=>{addWall(c*TILE+TILE*.5,rr*TILE+TILE*.5,TILE,WALL_H*.6,TILE*.2,bWallM);});
+    [-0.5,ROWS-.5].forEach(rr=>{addWall(c*TILE+TILE*.5,rr*TILE+TILE*.5,TILE,WALL_H*.6,TILE*.2,bWallMat,isCave);});
   }
   for(let r=0;r<ROWS;r++){
-    [-0.5,COLS-.5].forEach(cc=>{addWall(cc*TILE+TILE*.5,r*TILE+TILE*.5,TILE*.2,WALL_H*.6,TILE,bWallM);});
+    [-0.5,COLS-.5].forEach(cc=>{addWall(cc*TILE+TILE*.5,r*TILE+TILE*.5,TILE*.2,WALL_H*.6,TILE,bWallMat,isCave);});
   }
 
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
@@ -803,8 +855,9 @@ function buildScene(lvlData){
   scene.add(sceneGroup);
 }
 
-function addWall(x,z,w,h,d,mat){
-  const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);mesh.position.set(x,h/2,z);mesh.castShadow=true;mesh.receiveShadow=true;sceneGroup.add(mesh);
+function addWall(x,z,w,h,d,mat,isCave){
+  const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+  mesh.position.set(x,h/2,z);mesh.castShadow=true;mesh.receiveShadow=true;sceneGroup.add(mesh);
 }
 
 function buildObstacle(theme,wx,wz,rng){
@@ -823,7 +876,6 @@ function buildObstacle(theme,wx,wz,rng){
       const center=new THREE.Mesh(new THREE.SphereGeometry(.15,8,8),new THREE.MeshToonMaterial({color:0xfbbf24,emissive:0xfbbf24,emissiveIntensity:.3}));center.position.set(wx,WALL_H*.9+.2,wz);sceneGroup.add(center);
     }
   } else if(theme==='forest'){
-    // Trunk radius ~0.24 — hitbox uses THEME_HITBOX.forest = 0.28 (tight around trunk)
     const trunkH=WALL_H+rng()*.8;
     const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22,.28,trunkH,7),new THREE.MeshToonMaterial({color:0x6b3a1f}));trunk.position.set(wx,trunkH/2,wz);trunk.castShadow=true;sceneGroup.add(trunk);
     const fColors=[0x16a34a,0x15803d,0x22c55e,0x4ade80];
@@ -853,11 +905,19 @@ function buildObstacle(theme,wx,wz,rng){
       const snow=new THREE.Mesh(new THREE.ConeGeometry(r*.65,.4,8),new THREE.MeshToonMaterial({color:snowColors[l%snowColors.length]}));snow.position.set(wx,trunkH-l*.22+.6,wz);sceneGroup.add(snow);
     }
   } else {
+    // ── CAVE: MeshStandardMaterial so SpotLight illuminates them ──
     const bH=WALL_H*.9;
-    const block=new THREE.Mesh(new THREE.BoxGeometry(TILE*.88,bH,TILE*.88),new THREE.MeshToonMaterial({color:0x1e1b4b}));block.position.set(wx,bH/2,wz);block.castShadow=true;block.receiveShadow=true;sceneGroup.add(block);
-    const stM=new THREE.MeshToonMaterial({color:0x312e81});
-    const st=new THREE.Mesh(new THREE.ConeGeometry(.16,.7,6),stM);st.position.set(wx+(rng()-.5)*.3,bH+.35,wz+(rng()-.5)*.3);sceneGroup.add(st);
-    if(rng()<.45){const crColors=[0xa855f7,0x3b82f6,0x06b6d4,0x10b981];const crM=new THREE.MeshToonMaterial({color:crColors[Math.floor(rng()*crColors.length)],transparent:true,opacity:.9,emissive:crColors[Math.floor(rng()*crColors.length)],emissiveIntensity:1.2});sceneGroup.add(new THREE.Mesh(new THREE.OctahedronGeometry(.2),crM)).position.set(wx+.3,bH*.4,wz+.2);}
+    const block=new THREE.Mesh(new THREE.BoxGeometry(TILE*.88,bH,TILE*.88),caveMat(0x1e1b4b));
+    block.position.set(wx,bH/2,wz);block.castShadow=true;block.receiveShadow=true;sceneGroup.add(block);
+    const st=new THREE.Mesh(new THREE.ConeGeometry(.16,.7,6),caveMat(0x312e81));
+    st.position.set(wx+(rng()-.5)*.3,bH+.35,wz+(rng()-.5)*.3);sceneGroup.add(st);
+    if(rng()<.45){
+      const crColors=[0xa855f7,0x3b82f6,0x06b6d4,0x10b981];
+      const col=crColors[Math.floor(rng()*crColors.length)];
+      const crM=new THREE.MeshStandardMaterial({color:col,emissive:col,emissiveIntensity:0.8,roughness:0.3,metalness:0.5});
+      const cr=new THREE.Mesh(new THREE.OctahedronGeometry(.2),crM);
+      cr.position.set(wx+.3,bH*.4,wz+.2);sceneGroup.add(cr);
+    }
   }
 }
 
@@ -876,11 +936,17 @@ function addDecor(theme,wx,wz,rng){
     const sb=new THREE.Mesh(new THREE.SphereGeometry(.12,8,8),new THREE.MeshToonMaterial({color:0xe0f2fe}));sb.position.set(wx,.08,wz);sceneGroup.add(sb);
     if(rng()<.3){const cr=new THREE.Mesh(new THREE.OctahedronGeometry(.07),new THREE.MeshToonMaterial({color:0xbae6fd,transparent:true,opacity:.7}));cr.position.set(wx,.2,wz);sceneGroup.add(cr);}
   } else {
+    // Cave decor: glowing crystals with emissive so visible in dark
     const mColors=[0x7c3aed,0xdb2777,0x0891b2];
-    const mM=new THREE.MeshToonMaterial({color:mColors[Math.floor(rng()*mColors.length)],emissive:mColors[Math.floor(rng()*mColors.length)],emissiveIntensity:.5});
+    const col=mColors[Math.floor(rng()*mColors.length)];
+    const mM=caveMat(col, col, 0.6);
     const mushroom=new THREE.Mesh(new THREE.SphereGeometry(.13,8,8),mM);mushroom.scale.set(1,.6,1);mushroom.position.set(wx,.09,wz);sceneGroup.add(mushroom);
-    sceneGroup.add(new THREE.Mesh(new THREE.CylinderGeometry(.04,.05,.1,6),new THREE.MeshToonMaterial({color:0xd8b4fe}))).position.set(wx,.05,wz);
-    if(rng()<.25){const clr=[0xe879f9,0x38bdf8,0x4ade80];const cl=new THREE.Mesh(new THREE.OctahedronGeometry(.12),new THREE.MeshToonMaterial({color:clr[Math.floor(rng()*clr.length)],transparent:true,opacity:.9,emissive:clr[Math.floor(rng()*clr.length)],emissiveIntensity:1.5}));cl.position.set(wx,.15,wz);sceneGroup.add(cl);}
+    if(rng()<.25){
+      const clr=[0xe879f9,0x38bdf8,0x4ade80];
+      const c=clr[Math.floor(rng()*clr.length)];
+      const cl=new THREE.Mesh(new THREE.OctahedronGeometry(.12),new THREE.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:1.2,roughness:0.2,metalness:0.6}));
+      cl.position.set(wx,.15,wz);sceneGroup.add(cl);
+    }
   }
 }
 
@@ -890,21 +956,29 @@ function buildTreasure(theme){
   const buried=LEVELS[lvlIdx].needDig;
   chestBuried=buried;
   const yOffset=buried?-.28:.25;
+  const isCave=(theme==='cave');
 
-  const base=new THREE.Mesh(new THREE.BoxGeometry(.9,.5,.7),new THREE.MeshToonMaterial({color:0x92400e}));base.castShadow=true;grp.add(base);
-  const lid=new THREE.Mesh(new THREE.BoxGeometry(.9,.28,.7),new THREE.MeshToonMaterial({color:0xb45309}));lid.position.y=.39;lid.castShadow=true;grp.add(lid);
-  const bandM=new THREE.MeshToonMaterial({color:0xfbbf24});
-  [-1,0,1].forEach(i=>{const band=new THREE.Mesh(new THREE.BoxGeometry(.92,.08,.72),bandM);band.position.y=i*.18;grp.add(band);});
-  const lock=new THREE.Mesh(new THREE.BoxGeometry(.18,.18,.1),bandM);lock.position.set(0,.15,.36);grp.add(lock);
-  const lockHole=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,.12,8),new THREE.MeshToonMaterial({color:0x78350f}));lockHole.position.set(0,.15,.42);grp.add(lockHole);
-  [[-.4,.24,.36],[.4,.24,.36],[-.4,.24,-.36],[.4,.24,-.36]].forEach(([x,y,z])=>{const r=new THREE.Mesh(new THREE.SphereGeometry(.06,6,6),bandM);r.position.set(x,y,z);grp.add(r);});
+  // Use Standard materials for cave chest so it's lit by lantern
+  const chestWoodMat = isCave ? caveMat(0x92400e) : new THREE.MeshToonMaterial({color:0x92400e});
+  const chestLidMat  = isCave ? caveMat(0xb45309) : new THREE.MeshToonMaterial({color:0xb45309});
+  const chestGoldMat = isCave
+    ? new THREE.MeshStandardMaterial({color:0xfbbf24,emissive:0xfbbf24,emissiveIntensity:0.4,roughness:0.3,metalness:0.7})
+    : new THREE.MeshToonMaterial({color:0xfbbf24});
+  const chestHoleMat = isCave ? caveMat(0x78350f) : new THREE.MeshToonMaterial({color:0x78350f});
+
+  const base=new THREE.Mesh(new THREE.BoxGeometry(.9,.5,.7),chestWoodMat);base.castShadow=true;grp.add(base);
+  const lid=new THREE.Mesh(new THREE.BoxGeometry(.9,.28,.7),chestLidMat);lid.position.y=.39;lid.castShadow=true;grp.add(lid);
+  [-1,0,1].forEach(i=>{const band=new THREE.Mesh(new THREE.BoxGeometry(.92,.08,.72),chestGoldMat);band.position.y=i*.18;grp.add(band);});
+  const lock=new THREE.Mesh(new THREE.BoxGeometry(.18,.18,.1),chestGoldMat);lock.position.set(0,.15,.36);grp.add(lock);
+  const lockHole=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,.12,8),chestHoleMat);lockHole.position.set(0,.15,.42);grp.add(lockHole);
+  [[-.4,.24,.36],[.4,.24,.36],[-.4,.24,-.36],[.4,.24,-.36]].forEach(([x,y,z])=>{const r=new THREE.Mesh(new THREE.SphereGeometry(.06,6,6),chestGoldMat);r.position.set(x,y,z);grp.add(r);});
 
   if(buried){
-    const xM=new THREE.MeshToonMaterial({color:0xfbbf24,transparent:true,opacity:.8});
+    const xM=new THREE.MeshStandardMaterial({color:0xfbbf24,emissive:0xfbbf24,emissiveIntensity:isCave?1.5:.8,transparent:true,opacity:.9});
     const xBar1=new THREE.Mesh(new THREE.BoxGeometry(.8,.06,.12),xM);xBar1.rotation.y=Math.PI/4;
     const xBar2=new THREE.Mesh(new THREE.BoxGeometry(.8,.06,.12),xM);xBar2.rotation.y=-Math.PI/4;
     xBar1.position.y=.52;xBar2.position.y=.52;grp.add(xBar1);grp.add(xBar2);
-    const glow=new THREE.Mesh(new THREE.CircleGeometry(.7,16),new THREE.MeshToonMaterial({color:0xfbbf24,transparent:true,opacity:.18}));
+    const glow=new THREE.Mesh(new THREE.CircleGeometry(.7,16),new THREE.MeshStandardMaterial({color:0xfbbf24,emissive:0xfbbf24,emissiveIntensity:isCave?2.0:.5,transparent:true,opacity:.25}));
     glow.rotation.x=-Math.PI/2;glow.position.y=.28;grp.add(glow);
   }
 
@@ -914,11 +988,12 @@ function buildTreasure(theme){
   treasureMesh=grp;
   sceneGroup.add(grp);
   pointLight.position.set(tp.x,1.5,tp.z);
-  // In cave levels, chest glows brighter to be a hint beacon
-  if(LEVELS[lvlIdx].theme==='cave'){
+
+  if(isCave){
+    // Bright chest beacon in cave so you can find it even with limited light
     pointLight.color.setHex(0xfbbf24);
-    pointLight.intensity=3.5;
-    pointLight.distance=6;
+    pointLight.intensity=4.0;
+    pointLight.distance=10;
   } else {
     pointLight.color.setHex(0xfbbf24);
     pointLight.intensity=2;
@@ -995,7 +1070,7 @@ function updateSonarUI(dist,maxDist){
 }
 
 // ══════════════════════════════════════════════
-//  COLLISION — per-theme hitbox radius
+//  COLLISION
 // ══════════════════════════════════════════════
 function getThemeHitbox(){
   return THEME_HITBOX[LEVELS[lvlIdx].theme]||0.52;
@@ -1051,7 +1126,7 @@ function showTutorial(type){
     document.getElementById('tut-title').textContent='🔦 ¡Cueva Oscura!';
     document.getElementById('tut-icon').textContent='🔦';
     document.getElementById('tut-text').textContent='¡Esta cueva es muy oscura! Tienes una linterna para iluminar el camino.';
-    document.getElementById('tut-text2').textContent='Usa el PICO para cavar el cofre y la LINTERNA para ver en la oscuridad. ¡Cuida la dirección de la luz!';
+    document.getElementById('tut-text2').textContent='Usa el PICO para cavar el cofre y la LINTERNA para ver en la oscuridad. ¡La linterna apunta hacia donde miras!';
     document.getElementById('tut-key').textContent='E — Picar piedra';
     lanternKeyEl.style.display='inline';
   } else if(type==='cave'){
@@ -1085,7 +1160,6 @@ const DIG_RANGE=2.2,DIG_TIME_TOTAL=2.5;
 function update(dt){
   if(!gameActive||levelComplete||tutorialOpen)return;
 
-  // MOVEMENT
   let mx=0,mz=0;
   const fwd=new THREE.Vector3(-Math.sin(camYaw),0,-Math.cos(camYaw));
   const right=new THREE.Vector3(Math.cos(camYaw),0,-Math.sin(camYaw));
@@ -1097,14 +1171,12 @@ function update(dt){
   if(len>0){mx/=len;mz/=len;player.pos.x+=mx*PLAYER_SPEED*dt;player.pos.z+=mz*PLAYER_SPEED*dt;player.isMoving=true;player.walkTime+=dt;player.targetFacing=Math.atan2(mx,mz);}
   else player.isMoving=false;
 
-  // Use theme-specific hitbox for collision
   const hitR=getThemeHitbox();
   resolveCollision(player.pos, hitR);
   if(player.group){player.group.position.x=player.pos.x;player.group.position.z=player.pos.z;}
 
   animatePlayer(dt);
 
-  // CAMERA
   const camTarget=player.pos.clone();
   const cx=camTarget.x+Math.sin(camYaw)*CAM_DIST*Math.cos(camPitch);
   const cy=camTarget.y+Math.sin(camPitch)*CAM_DIST;
@@ -1114,13 +1186,6 @@ function update(dt){
 
   if(treasureMesh&&!chestBuried)treasureMesh.rotation.y+=dt*.8;
   pointLight.intensity=1.5+Math.sin(Date.now()*.003)*1.0;
-
-  // Flicker lantern slightly for atmosphere
-  if(LEVELS[lvlIdx].hasLantern&&lanternOn){
-    const flicker=1.0+Math.sin(Date.now()*.007)*0.08+Math.random()*0.04;
-    lanternAmbient.intensity=1.8*flicker;
-    lanternDir.intensity=1.2*flicker;
-  }
 
   const dist=treasureMesh?player.pos.distanceTo(new THREE.Vector3(treasureMesh.position.x,player.pos.y,treasureMesh.position.z)):999;
   const maxSoundDist=COLS*TILE*.6;
@@ -1213,7 +1278,6 @@ function initLevel(idx){
   do{g=buildGrid(LEVELS[idx]);t++;}while(t<15&&!bfs(g,start,{x:COLS-2,y:ROWS-2}));
   grid=g;
 
-  // ── SPAWN FIX: find a safe clear cell, not hardcoded ──
   const safeSpawn=findSafeSpawn(g);
   player.pos.copy(safeSpawn);
   if(player.group){player.group.position.set(player.pos.x,0,player.pos.z);}
@@ -1224,10 +1288,8 @@ function initLevel(idx){
   equipTool(idx);
   updateHud();hideMsg();
 
-  // Reset lantern state for new level
   lanternOn=true;
 
-  // Show appropriate tutorial
   const needDig=LEVELS[idx].needDig;
   const isCave=LEVELS[idx].theme==='cave';
   const hasLantern=LEVELS[idx].hasLantern;
@@ -1292,9 +1354,8 @@ function startGame(){
 }
 function endGame(won){
   gameActive=false;stopChestSound();
-  lanternAmbient.intensity=0;
-  lanternDir.intensity=0;
-  lanternPoint.intensity=0;
+  setLanternLights(false);
+  caveAmbient.intensity=0;
   document.getElementById('hud').classList.remove('on');
   if(won){document.getElementById('win-screen').style.display='flex';document.getElementById('final-score').textContent=score+' puntos 🎉';}
   else{document.getElementById('gameover-screen').style.display='flex';document.getElementById('go-score').textContent=score+' puntos';}
