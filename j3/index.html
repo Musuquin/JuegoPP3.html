@@ -19,10 +19,13 @@
   #overlay .gscore{font-size:clamp(14px,2.5vw,22px);color:#fff;margin:10px 0 4px;}
   #overlay .glvl{font-size:clamp(10px,1.8vw,13px);color:#a855f7;margin-bottom:6px;}
   #gc{position:fixed;top:0;left:0;display:block;image-rendering:pixelated;image-rendering:crisp-edges;}
+  #muteBtn{position:fixed;top:8px;right:12px;z-index:20;background:#3b0764;border:1px solid #9d4edd;color:#e9c5ff;font-size:16px;cursor:pointer;padding:3px 8px;border-radius:3px;font-family:'Courier New',monospace;}
+  #muteBtn:hover{background:#6b21a8;}
 </style>
 </head>
 <body>
 <canvas id="gc"></canvas>
+<button id="muteBtn" title="Silenciar/Activar sonido">🔊</button>
 <div id="ui">
   <span class="stat">SCORE <span class="val" id="scoreEl">0</span></span>
   <span class="stat">NIVEL <span class="val" id="levelEl">1</span></span>
@@ -149,50 +152,322 @@ const TINY={
 // ── CANVAS & SCALE ────────────────────────────────────────────
 const canvas = document.getElementById('gc');
 const C = canvas.getContext('2d');
-
-// Internal game resolution (fixed logical units)
 const CW = 320, CH = 200;
-// BW/BH = basket size in logical units
 const BW = 32, BH = 12;
-
-let SCALE = 1;   // logical → physical px multiplier
-let OX = 0;      // horizontal offset to center if letterboxed
-let OY = 0;      // vertical offset
-let GH = 0;      // game area height in screen px (excluding UI bar)
-let STARS = [];
-
+let SCALE = 1, OX = 0, OY = 0, GH = 0, STARS = [];
 const uiEl = document.getElementById('ui');
 
 function resize(){
   const uiH = uiEl.offsetHeight || 32;
-  const W = window.innerWidth;
-  const H = window.innerHeight - uiH;
-
-  // Scale to fill: stretch to fill while keeping aspect ratio
-  const scaleX = W  / CW;
-  const scaleY = H  / CH;
+  const W = window.innerWidth, H = window.innerHeight - uiH;
+  const scaleX = W / CW, scaleY = H / CH;
   SCALE = Math.min(scaleX, scaleY);
-
-  // Canvas physical size = full available area
-  canvas.width  = W;
-  canvas.height = H;
-  canvas.style.width  = W + 'px';
-  canvas.style.height = H + 'px';
-
-  // Center the game within the canvas if letterboxed
-  OX = (W  - CW * SCALE) / 2;
-  OY = (H  - CH * SCALE) / 2;
-  GH = H;
-
-  STARS = Array.from({length:50}, () => ({
-    x: Math.random() * CW,
-    y: Math.random() * (CH - 18)
-  }));
-
+  canvas.width = W; canvas.height = H;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  OX = (W - CW * SCALE) / 2; OY = (H - CH * SCALE) / 2; GH = H;
+  STARS = Array.from({length:50}, () => ({x: Math.random()*CW, y: Math.random()*(CH-18)}));
   C.imageSmoothingEnabled = false;
 }
-
 window.addEventListener('resize', resize);
+
+// ── AUDIO ENGINE ─────────────────────────────────────────────
+let audioCtx = null;
+let masterGain = null;
+let musicGain = null;
+let sfxGain = null;
+let muted = false;
+let musicNodes = [];
+
+// Escalas pentatónicas (notas en Hz) para una melodía relajante
+const PENTATONIC = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25, 784.00, 880.00];
+const BASS_NOTES = [130.81, 146.83, 164.81, 196.00, 220.00];
+
+function initAudio(){
+  if(audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 1.0;
+  masterGain.connect(audioCtx.destination);
+
+  musicGain = audioCtx.createGain();
+  musicGain.gain.value = 0.18;
+  musicGain.connect(masterGain);
+
+  sfxGain = audioCtx.createGain();
+  sfxGain.gain.value = 0.5;
+  sfxGain.connect(masterGain);
+
+  startAmbientMusic();
+}
+
+function toggleMute(){
+  if(!audioCtx) initAudio();
+  muted = !muted;
+  masterGain.gain.setTargetAtTime(muted ? 0 : 1, audioCtx.currentTime, 0.1);
+  document.getElementById('muteBtn').textContent = muted ? '🔇' : '🔊';
+}
+
+// ── MÚSICA AMBIENTAL GENERATIVA ───────────────────────────────
+// Usa osciladores con LFO para crear una atmósfera suave tipo lofi/ambient
+
+function makeOsc(freq, type, gainVal, detune=0){
+  const osc = audioCtx.createOscillator();
+  const g   = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  osc.detune.value = detune;
+  g.gain.value = gainVal;
+  osc.connect(g);
+  g.connect(musicGain);
+  osc.start();
+  musicNodes.push(osc, g);
+  return {osc, g};
+}
+
+function makePad(freq, gainVal){
+  // Pad con tres osciladores ligeramente detuneados para riqueza de timbre
+  const o1 = makeOsc(freq, 'sine',     gainVal,    0);
+  const o2 = makeOsc(freq, 'sine',     gainVal*0.6, 7);
+  const o3 = makeOsc(freq, 'triangle', gainVal*0.3, -5);
+  // LFO de volumen suave
+  const lfo = audioCtx.createOscillator();
+  const lfoG = audioCtx.createGain();
+  lfo.frequency.value = 0.15 + Math.random() * 0.1;
+  lfoG.gain.value = gainVal * 0.4;
+  lfo.connect(lfoG);
+  lfoG.connect(o1.g.gain);
+  lfoG.connect(o2.g.gain);
+  lfo.start();
+  musicNodes.push(lfo, lfoG);
+}
+
+// Arpeggio secuenciador suave
+let arpStep = 0;
+let arpInterval = null;
+const ARP_SEQ = [0, 2, 4, 7, 4, 2, 0, 2]; // índices en PENTATONIC
+
+function startArpeggio(){
+  arpInterval = setInterval(() => {
+    if(!audioCtx || muted) return;
+    const idx = PENTATONIC[ARP_SEQ[arpStep % ARP_SEQ.length]];
+    const note = idx * 2; // octava alta
+
+    const osc = audioCtx.createOscillator();
+    const env = audioCtx.createGain();
+    const filt = audioCtx.createBiquadFilter();
+
+    osc.type = 'triangle';
+    osc.frequency.value = note;
+    filt.type = 'lowpass';
+    filt.frequency.value = 1200;
+    filt.Q.value = 1;
+
+    env.gain.setValueAtTime(0, audioCtx.currentTime);
+    env.gain.linearRampToValueAtTime(0.07, audioCtx.currentTime + 0.02);
+    env.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+
+    osc.connect(filt);
+    filt.connect(env);
+    env.connect(musicGain);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.65);
+
+    arpStep++;
+  }, 320);
+}
+
+// Línea de bajo suave
+let bassStep = 0;
+let bassInterval = null;
+const BASS_SEQ = [0, 0, 2, 0, 1, 0, 3, 0];
+
+function startBass(){
+  bassInterval = setInterval(() => {
+    if(!audioCtx || muted) return;
+    const freq = BASS_NOTES[BASS_SEQ[bassStep % BASS_SEQ.length]];
+
+    const osc = audioCtx.createOscillator();
+    const env = audioCtx.createGain();
+    const filt = audioCtx.createBiquadFilter();
+
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    filt.type = 'lowpass';
+    filt.frequency.value = 300;
+
+    env.gain.setValueAtTime(0, audioCtx.currentTime);
+    env.gain.linearRampToValueAtTime(0.18, audioCtx.currentTime + 0.05);
+    env.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.0);
+
+    osc.connect(filt);
+    filt.connect(env);
+    env.connect(musicGain);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 1.1);
+
+    bassStep++;
+  }, 1280);
+}
+
+// Hi-hat suave estilo lofi
+let hihatInterval = null;
+
+function startHihat(){
+  hihatInterval = setInterval(() => {
+    if(!audioCtx || muted) return;
+    // Ruido blanco corto = hi-hat
+    const bufSize = audioCtx.sampleRate * 0.04;
+    const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    for(let i = 0; i < bufSize; i++) data[i] = (Math.random()*2-1);
+
+    const src = audioCtx.createBufferSource();
+    src.buffer = buf;
+
+    const filt = audioCtx.createBiquadFilter();
+    filt.type = 'highpass';
+    filt.frequency.value = 6000;
+
+    const env = audioCtx.createGain();
+    env.gain.setValueAtTime(0.04, audioCtx.currentTime);
+    env.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+
+    src.connect(filt);
+    filt.connect(env);
+    env.connect(musicGain);
+    src.start();
+    src.stop(audioCtx.currentTime + 0.05);
+  }, 320);
+}
+
+function startAmbientMusic(){
+  // Pads de acorde Cm (Do menor) suaves
+  makePad(130.81, 0.12); // C2
+  makePad(155.56, 0.09); // Eb2
+  makePad(196.00, 0.08); // G2
+  makePad(261.63, 0.06); // C3
+
+  startArpeggio();
+  startBass();
+  startHihat();
+}
+
+function stopMusic(){
+  if(arpInterval)  { clearInterval(arpInterval);  arpInterval  = null; }
+  if(bassInterval) { clearInterval(bassInterval); bassInterval = null; }
+  if(hihatInterval){ clearInterval(hihatInterval);hihatInterval= null; }
+  for(const n of musicNodes){
+    try{ if(n.stop) n.stop(); if(n.disconnect) n.disconnect(); }catch(e){}
+  }
+  musicNodes = [];
+}
+
+// ── EFECTOS DE SONIDO ─────────────────────────────────────────
+
+// Catch sound: acorde mayor brillante en escala pentatónica según puntos
+const CATCH_NOTES = {
+  apple:       [523.25, 659.25],
+  banana:      [587.33, 739.99],
+  coconut:     [392.00, 493.88],
+  watermelon:  [523.25, 783.99],
+  orange:      [659.25, 830.61],
+  grapes:      [440.00, 659.25],
+  strawberry:  [587.33, 880.00],
+  lime:        [523.25, 698.46],
+};
+
+function playCatchSound(fruitName){
+  if(!audioCtx || muted) return;
+  const notes = CATCH_NOTES[fruitName] || [523.25, 659.25];
+  notes.forEach((freq, i) => {
+    const osc = audioCtx.createOscillator();
+    const env = audioCtx.createGain();
+    const filt = audioCtx.createBiquadFilter();
+
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    filt.type = 'bandpass';
+    filt.frequency.value = freq * 1.5;
+    filt.Q.value = 2;
+
+    const t = audioCtx.currentTime + i * 0.04;
+    env.gain.setValueAtTime(0, t);
+    env.gain.linearRampToValueAtTime(0.35, t + 0.01);
+    env.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+
+    osc.connect(filt);
+    filt.connect(env);
+    env.connect(sfxGain);
+    osc.start(t);
+    osc.stop(t + 0.4);
+  });
+
+  // Chime brillante encima
+  const chime = audioCtx.createOscillator();
+  const chEnv  = audioCtx.createGain();
+  chime.type = 'sine';
+  chime.frequency.value = notes[notes.length-1] * 2;
+  chEnv.gain.setValueAtTime(0, audioCtx.currentTime + 0.05);
+  chEnv.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 0.07);
+  chEnv.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+  chime.connect(chEnv);
+  chEnv.connect(sfxGain);
+  chime.start(audioCtx.currentTime + 0.05);
+  chime.stop(audioCtx.currentTime + 0.55);
+}
+
+function playMissSound(){
+  if(!audioCtx || muted) return;
+  const osc  = audioCtx.createOscillator();
+  const env  = audioCtx.createGain();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.25);
+  env.gain.setValueAtTime(0.2, audioCtx.currentTime);
+  env.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+  osc.connect(env);
+  env.connect(sfxGain);
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.35);
+}
+
+function playGameOverSound(){
+  if(!audioCtx || muted) return;
+  const freqs = [392, 349, 311, 261];
+  freqs.forEach((freq, i) => {
+    const osc = audioCtx.createOscillator();
+    const env = audioCtx.createGain();
+    const t = audioCtx.currentTime + i * 0.22;
+    osc.type = 'sawtooth';
+    osc.frequency.value = freq;
+    env.gain.setValueAtTime(0, t);
+    env.gain.linearRampToValueAtTime(0.3, t + 0.02);
+    env.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+    osc.connect(env);
+    env.connect(sfxGain);
+    osc.start(t);
+    osc.stop(t + 0.45);
+  });
+}
+
+function playLevelUpSound(){
+  if(!audioCtx || muted) return;
+  const notes = [523.25, 659.25, 783.99, 1046.50];
+  notes.forEach((freq, i) => {
+    const osc = audioCtx.createOscillator();
+    const env = audioCtx.createGain();
+    const t = audioCtx.currentTime + i * 0.1;
+    osc.type = 'triangle';
+    osc.frequency.value = freq;
+    env.gain.setValueAtTime(0, t);
+    env.gain.linearRampToValueAtTime(0.25, t + 0.02);
+    env.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+    osc.connect(env);
+    env.connect(sfxGain);
+    osc.start(t);
+    osc.stop(t + 0.35);
+  });
+}
 
 // ── GAME STATE ────────────────────────────────────────────────
 const NAMES=['apple','banana','coconut','watermelon','orange','grapes','strawberry','lime'];
@@ -201,15 +476,16 @@ const PCOL ={apple:'#f47171',banana:'#ffe49a',coconut:'#a07850',watermelon:'#f47
              orange:'#ffb347',grapes:'#c77dff',strawberry:'#ffb3b3',lime:'#b5e545',miss:'#ff4444'};
 
 let basket, fruits, particles, popups, score, lives, level, state, fn, st;
+let prevLevel = 1;
 const keys = {};
 
 function dropSpeed(){ return 0.12 + (level-1) * 0.07; }
-function spawnEvery(){ return Math.max(60, 200 - (level-1) * 15); }
+function spawnEvery(){ return Math.max(100, 320 - (level-1) * 18); }
 
 function reset(){
   basket = {x: CW/2 - BW/2, vx: 0};
   fruits=[]; particles=[]; popups=[];
-  score=0; lives=10; level=1; fn=0; st=0;
+  score=0; lives=10; level=1; prevLevel=1; fn=0; st=0;
   state='playing';
   uiUpdate();
   document.getElementById('overlay').style.display='none';
@@ -239,39 +515,30 @@ function burst(x, y, n){
 }
 
 // ── RENDER ───────────────────────────────────────────────────
-// All drawing uses logical coords; we apply a transform once at the start
 function render(){
   C.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Fill letterbox bars with bg color
   C.fillStyle = '#0d0520';
   C.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Apply transform: translate to OX/OY, scale by SCALE
   C.save();
   C.translate(OX, OY);
   C.scale(SCALE, SCALE);
-  // Now all coords below are in logical units (0..CW, 0..CH)
 
-  // Sky
   C.fillStyle = '#1a0a2e';
   C.fillRect(0, 0, CW, CH);
 
-  // Stars
   for(const s of STARS){
     const t = (Math.sin(fn*0.025 + s.x*0.3) + 1) / 2;
     C.fillStyle = t > 0.55 ? '#ffffff' : '#7c4fa0';
     C.fillRect(Math.floor(s.x), Math.floor(s.y), 1, 1);
   }
 
-  // Side accent bars (pixel art style)
   for(let y=6; y<CH-18; y+=8){
     C.fillStyle = y%16 < 8 ? '#9d4edd' : '#ec4899';
     C.fillRect(0, y, 2, 6);
     C.fillRect(CW-2, y, 2, 6);
   }
 
-  // Ground strip
   for(let x=0; x<CW; x++){
     C.fillStyle = x%4 < 2 ? '#4c1d95' : '#3b0764';
     C.fillRect(x, CH-14, 1, 1);
@@ -281,7 +548,6 @@ function render(){
     C.fillRect(x, CH-9, 1, 9);
   }
 
-  // Fruits
   for(const f of fruits){
     const sp = SP[f.n];
     const fx = Math.floor(f.x), fy = Math.floor(f.y);
@@ -297,14 +563,11 @@ function render(){
     }
   }
 
-  // Basket
   const bx = Math.floor(basket.x), by = CH - 26;
-  // Rim
   for(let x=0; x<BW; x++){
     C.fillStyle = x%2===0 ? '#c084fc' : '#a855f7';
     C.fillRect(bx+x, by, 1, 2);
   }
-  // Woven body
   const bcol=['#7c3aed','#6d28d9','#5b21b6','#4c1d95','#3b0764','#2e1065','#1e0a4a','#180944','#120838','#0e0630'];
   const bwv =['#9d4edd','#7b2db8'];
   for(let row=0; row<10; row++){
@@ -315,11 +578,9 @@ function render(){
       C.fillRect(bx+indent+col, by+2+row, 1, 1);
     }
   }
-  // Bottom shadow
   C.fillStyle = '#0d0520';
   for(let x=2; x<BW-2; x++) C.fillRect(bx+x, by+12, 1, 1);
 
-  // Particles
   for(const p of particles){
     C.globalAlpha = Math.max(0, p.life);
     C.fillStyle   = p.c;
@@ -327,7 +588,6 @@ function render(){
   }
   C.globalAlpha = 1;
 
-  // Score popups (tiny pixel font)
   for(const pop of popups){
     C.globalAlpha = Math.max(0, pop.life);
     C.fillStyle   = '#ffe066';
@@ -343,7 +603,6 @@ function render(){
     }
   }
   C.globalAlpha = 1;
-
   C.restore();
 }
 
@@ -352,49 +611,48 @@ function loop(){
   if(state !== 'playing'){ requestAnimationFrame(loop); return; }
   fn++;
 
-  // Basket: very slow, smooth control
-  const MAX = 0.7;
-  if(keys['ArrowLeft']  || keys['a'] || keys['A']) basket.vx = Math.max(basket.vx - 0.15, -MAX);
-  else if(keys['ArrowRight'] || keys['d'] || keys['D']) basket.vx = Math.min(basket.vx + 0.15, MAX);
-  else basket.vx *= 0.6;
+  const MAX = 1.3;
+  if(keys['ArrowLeft']  || keys['a'] || keys['A']) basket.vx = Math.max(basket.vx - 0.22, -MAX);
+  else if(keys['ArrowRight'] || keys['d'] || keys['D']) basket.vx = Math.min(basket.vx + 0.22, MAX);
+  else basket.vx *= 0.65;
   basket.x = Math.max(0, Math.min(CW - BW, basket.x + basket.vx));
 
-  // Spawn fruits
   if(++st >= spawnEvery()){ spawn(); st=0; }
 
-  // Update fruits
   const bx = basket.x, by = CH - 26;
   for(let i = fruits.length-1; i >= 0; i--){
     const f = fruits[i];
     f.y += f.vy;
-    // Catch
     if(f.y+9 > by && f.y < by+BH && f.x+8 > bx && f.x < bx+BW){
       const pts = PTS[f.n];
       score += pts;
       burst(f.x+5, f.y+5, f.n);
       popups.push({x: f.x, y: f.y, pts, life:1});
+      playCatchSound(f.n);
       fruits.splice(i, 1);
-      level = 1 + Math.floor(score / 200);
+      const newLevel = 1 + Math.floor(score / 200);
+      if(newLevel > level){
+        level = newLevel;
+        playLevelUpSound();
+      }
       uiUpdate();
       continue;
     }
-    // Missed
     if(f.y > CH + 2){
       lives--;
       burst(f.x+5, CH-15, 'miss');
+      playMissSound();
       fruits.splice(i, 1);
       uiUpdate();
       if(lives <= 0){ gameOver(); return; }
     }
   }
 
-  // Update particles
   for(let i = particles.length-1; i >= 0; i--){
     const p = particles[i];
     p.x += p.vx; p.y += p.vy; p.vy += 0.03; p.life -= 0.05;
     if(p.life <= 0) particles.splice(i, 1);
   }
-  // Update popups
   for(let i = popups.length-1; i >= 0; i--){
     popups[i].y  -= 0.2;
     popups[i].life -= 0.04;
@@ -407,6 +665,7 @@ function loop(){
 
 function gameOver(){
   state = 'gameover';
+  playGameOverSound();
   const ov = document.getElementById('overlay');
   ov.style.display = 'flex';
   ov.innerHTML = `
@@ -429,21 +688,24 @@ let touchX = null;
 canvas.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; }, {passive:true});
 canvas.addEventListener('touchmove', e => {
   if(touchX === null) return;
-  // Convert screen delta → logical delta
   const dx = (e.touches[0].clientX - touchX) / SCALE;
   basket.x = Math.max(0, Math.min(CW - BW, basket.x + dx * 0.6));
   touchX = e.touches[0].clientX;
 }, {passive:true});
 canvas.addEventListener('touchend', () => { touchX = null; }, {passive:true});
 
+document.getElementById('muteBtn').onclick = toggleMute;
+
 // ── BOOT ─────────────────────────────────────────────────────
-document.getElementById('btnStart').onclick = () => { reset(); loop(); };
+document.getElementById('btnStart').onclick = () => {
+  initAudio();
+  reset();
+  loop();
+};
 
 resize();
 basket={x:CW/2-BW/2,vx:0}; fruits=[]; particles=[]; popups=[];
 score=0; lives=10; level=1; fn=0; st=0; state='menu';
-
-// Draw initial background
 render();
 requestAnimationFrame(loop);
 </script>
