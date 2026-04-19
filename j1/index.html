@@ -53,7 +53,7 @@
       max-width: 100%;
       transition: box-shadow 0.2s ease;
     }
-    #pong-canvas.flash-player { box-shadow: 0 0 32px 6px rgba(100,180,255,0.55); }
+    #pong-canvas.flash-player { box-shadow: 0 0 32px 6px rgba(191,30,255,0.55); }
     #pong-canvas.flash-ai     { box-shadow: 0 0 32px 6px rgba(255,60,120,0.55); }
     #pong-canvas.shake        { animation: shake 0.35s ease; }
     @keyframes shake {
@@ -158,7 +158,6 @@
       background: rgba(191,30,255,0.13);
       box-shadow: 0 0 10px 1px rgba(191,30,255,0.25);
     }
-    /* Tooltip */
     .diff-btn::after {
       content: attr(data-tooltip);
       position: absolute;
@@ -185,9 +184,26 @@
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
+
+    /* ── Mute button ── */
+    #mute-btn {
+      position: fixed;
+      top: 10px; right: 14px;
+      background: #1a001a;
+      border: 1px solid #bf1eff;
+      color: #bf1eff;
+      font-size: 16px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 20;
+    }
+    #mute-btn:hover { background: #3b0764; }
   </style>
 </head>
 <body>
+  <button id="mute-btn" title="Silenciar/Activar">🔊</button>
+
   <div id="pong-root">
     <div id="pong-header">
       <div class="score-block">
@@ -200,7 +216,6 @@
       </div>
     </div>
 
-    <!-- Difficulty menu -->
     <div id="difficulty-menu">
       <span class="diff-label">Dificultad</span>
       <button class="diff-btn" id="diff-easy"
@@ -256,7 +271,6 @@
     let speedIntervalId = null;
     let animId = null;
 
-    // Difficulty: error added to AI's perceived ball Y so it misses
     const diffMaxError = { easy: 110, normal: 42, hard: 6 };
     let currentDiff    = 'normal';
     let aiError        = 0;
@@ -303,7 +317,295 @@
     let trail = [];
     let particles = [];
 
-    /* ── helpers ── */
+    // ── AUDIO ENGINE ────────────────────────────────────────────
+    let audioCtx = null;
+    let masterGain = null;
+    let musicGain = null;
+    let sfxGain = null;
+    let muted = false;
+    let musicNodes = [];
+    let arpInterval = null;
+    let bassInterval = null;
+    let arpStep = 0;
+    let bassStep = 0;
+
+    function initAudio() {
+      if (audioCtx) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = 1.0;
+      masterGain.connect(audioCtx.destination);
+
+      musicGain = audioCtx.createGain();
+      musicGain.gain.value = 0.15;
+      musicGain.connect(masterGain);
+
+      sfxGain = audioCtx.createGain();
+      sfxGain.gain.value = 0.55;
+      sfxGain.connect(masterGain);
+
+      startMusic();
+    }
+
+    function toggleMute() {
+      if (!audioCtx) initAudio();
+      muted = !muted;
+      masterGain.gain.setTargetAtTime(muted ? 0 : 1, audioCtx.currentTime, 0.1);
+      document.getElementById('mute-btn').textContent = muted ? '🔇' : '🔊';
+    }
+    document.getElementById('mute-btn').addEventListener('click', toggleMute);
+
+    // ── MÚSICA AMBIENTAL ─────────────────────────────────────────
+    // Estilo synthwave oscuro: pads de acordes + arpeggio + bajo pulsante
+
+    function makePad(freq, gainVal) {
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const g    = audioCtx.createGain();
+      const filt = audioCtx.createBiquadFilter();
+      osc1.type = 'sawtooth'; osc1.frequency.value = freq;
+      osc2.type = 'sawtooth'; osc2.frequency.value = freq * 1.005; // leve detune
+      filt.type = 'lowpass';  filt.frequency.value = 900; filt.Q.value = 1.2;
+      g.gain.value = gainVal;
+      // LFO de volumen lento
+      const lfo = audioCtx.createOscillator();
+      const lfoG = audioCtx.createGain();
+      lfo.frequency.value = 0.08 + Math.random() * 0.04;
+      lfoG.gain.value = gainVal * 0.5;
+      lfo.connect(lfoG); lfoG.connect(g.gain);
+      lfo.start();
+      osc1.connect(filt); osc2.connect(filt); filt.connect(g); g.connect(musicGain);
+      osc1.start(); osc2.start();
+      musicNodes.push(osc1, osc2, g, filt, lfo, lfoG);
+    }
+
+    // Progresión de acordes estilo synthwave: Am - F - C - G
+    // Notas en Hz de cada acorde (raíz, tercera, quinta)
+    const CHORD_SEQ = [
+      [220.00, 261.63, 329.63], // Am
+      [174.61, 220.00, 261.63], // F
+      [130.81, 164.81, 196.00], // C
+      [196.00, 246.94, 293.66], // G
+    ];
+    let chordIdx = 0;
+    let chordInterval = null;
+
+    function playChord() {
+      if (!audioCtx || muted) return;
+      const chord = CHORD_SEQ[chordIdx % CHORD_SEQ.length];
+      chord.forEach(freq => {
+        const osc = audioCtx.createOscillator();
+        const env = audioCtx.createGain();
+        const filt = audioCtx.createBiquadFilter();
+        osc.type = 'sawtooth';
+        osc.frequency.value = freq;
+        filt.type = 'lowpass'; filt.frequency.value = 700;
+        const t = audioCtx.currentTime;
+        env.gain.setValueAtTime(0, t);
+        env.gain.linearRampToValueAtTime(0.12, t + 0.08);
+        env.gain.setValueAtTime(0.12, t + 1.6);
+        env.gain.linearRampToValueAtTime(0, t + 2.0);
+        osc.connect(filt); filt.connect(env); env.connect(musicGain);
+        osc.start(t); osc.stop(t + 2.1);
+      });
+      chordIdx++;
+    }
+
+    // Arpeggio synthwave sobre la progresión
+    const ARP_PATTERNS = [
+      [0, 2, 4, 2, 0, 4, 2, 0],
+      [0, 4, 2, 4, 0, 2, 4, 2],
+    ];
+    let arpPattern = 0;
+
+    function startArp() {
+      arpInterval = setInterval(() => {
+        if (!audioCtx || muted) return;
+        const chord = CHORD_SEQ[chordIdx % CHORD_SEQ.length];
+        const pat   = ARP_PATTERNS[arpPattern % ARP_PATTERNS.length];
+        const noteIdx = pat[arpStep % pat.length];
+        const freq = chord[noteIdx % chord.length] * 2; // octava alta
+
+        const osc = audioCtx.createOscillator();
+        const env = audioCtx.createGain();
+        osc.type = 'square';
+        osc.frequency.value = freq;
+        const t = audioCtx.currentTime;
+        env.gain.setValueAtTime(0, t);
+        env.gain.linearRampToValueAtTime(0.04, t + 0.01);
+        env.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+        osc.connect(env); env.connect(musicGain);
+        osc.start(t); osc.stop(t + 0.25);
+        arpStep++;
+      }, 150);
+    }
+
+    function startBass() {
+      bassInterval = setInterval(() => {
+        if (!audioCtx || muted) return;
+        const chord = CHORD_SEQ[chordIdx % CHORD_SEQ.length];
+        const freq  = chord[0] / 2; // sub-octava
+
+        const osc  = audioCtx.createOscillator();
+        const env  = audioCtx.createGain();
+        const filt = audioCtx.createBiquadFilter();
+        osc.type = 'sawtooth';
+        osc.frequency.value = freq;
+        filt.type = 'lowpass'; filt.frequency.value = 280;
+        const t = audioCtx.currentTime;
+        env.gain.setValueAtTime(0, t);
+        env.gain.linearRampToValueAtTime(0.22, t + 0.04);
+        env.gain.exponentialRampToValueAtTime(0.001, t + 0.55);
+        osc.connect(filt); filt.connect(env); env.connect(musicGain);
+        osc.start(t); osc.stop(t + 0.6);
+        bassStep++;
+      }, 600);
+    }
+
+    // Hi-hat sutil
+    let hihatInterval = null;
+    function startHihat() {
+      hihatInterval = setInterval(() => {
+        if (!audioCtx || muted) return;
+        const bufSize = Math.floor(audioCtx.sampleRate * 0.03);
+        const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+        const src  = audioCtx.createBufferSource();
+        src.buffer = buf;
+        const filt = audioCtx.createBiquadFilter();
+        filt.type = 'highpass'; filt.frequency.value = 8000;
+        const env = audioCtx.createGain();
+        env.gain.setValueAtTime(0.035, audioCtx.currentTime);
+        env.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.03);
+        src.connect(filt); filt.connect(env); env.connect(musicGain);
+        src.start(); src.stop(audioCtx.currentTime + 0.04);
+      }, 300);
+    }
+
+    function startMusic() {
+      // Pads de ambiente oscuro
+      makePad(55.00, 0.08);  // A1
+      makePad(82.41, 0.06);  // E2
+      makePad(110.0, 0.05);  // A2
+
+      // Chord stabs cada 2s
+      chordInterval = setInterval(playChord, 2000);
+      playChord();
+
+      startArp();
+      startBass();
+      startHihat();
+    }
+
+    function stopMusic() {
+      if (chordInterval)  clearInterval(chordInterval);
+      if (arpInterval)    clearInterval(arpInterval);
+      if (bassInterval)   clearInterval(bassInterval);
+      if (hihatInterval)  clearInterval(hihatInterval);
+      for (const n of musicNodes) {
+        try { if (n.stop) n.stop(); n.disconnect(); } catch(e) {}
+      }
+      musicNodes = [];
+    }
+
+    // ── EFECTOS DE SONIDO ────────────────────────────────────────
+
+    // Golpe de paleta: tono corto percusivo, más agudo cuanto más rápido
+    function playPaddleHit(isPlayer, speed) {
+      if (!audioCtx || muted) return;
+      const freq = isPlayer ? 440 : 330;
+      const pitchBoost = Math.min(speed / (BASE_SPEED * 3), 1);
+
+      const osc  = audioCtx.createOscillator();
+      const env  = audioCtx.createGain();
+      const filt = audioCtx.createBiquadFilter();
+      osc.type = 'square';
+      osc.frequency.value = freq * (1 + pitchBoost * 0.5);
+      filt.type = 'bandpass'; filt.frequency.value = freq * 2; filt.Q.value = 3;
+      const t = audioCtx.currentTime;
+      env.gain.setValueAtTime(0.5, t);
+      env.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+      osc.connect(filt); filt.connect(env); env.connect(sfxGain);
+      osc.start(t); osc.stop(t + 0.14);
+
+      // Click de impacto encima
+      const click = audioCtx.createOscillator();
+      const cEnv  = audioCtx.createGain();
+      click.type = 'sine'; click.frequency.value = freq * 3;
+      cEnv.gain.setValueAtTime(0.3, t);
+      cEnv.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+      click.connect(cEnv); cEnv.connect(sfxGain);
+      click.start(t); click.stop(t + 0.06);
+    }
+
+    // Rebote en pared: tono grave corto
+    function playWallHit() {
+      if (!audioCtx || muted) return;
+      const osc = audioCtx.createOscillator();
+      const env = audioCtx.createGain();
+      osc.type = 'sine'; osc.frequency.value = 160;
+      const t = audioCtx.currentTime;
+      env.gain.setValueAtTime(0.25, t);
+      env.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+      osc.connect(env); env.connect(sfxGain);
+      osc.start(t); osc.stop(t + 0.1);
+    }
+
+    // Punto marcado: fanfarria corta
+    function playScore(playerScored) {
+      if (!audioCtx || muted) return;
+      const notes = playerScored
+        ? [523.25, 659.25, 783.99, 1046.50]  // Do mayor ascendente
+        : [392.00, 349.23, 311.13, 261.63];  // descendente triste
+      notes.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const env = audioCtx.createGain();
+        const t = audioCtx.currentTime + i * 0.1;
+        osc.type = 'triangle'; osc.frequency.value = freq;
+        env.gain.setValueAtTime(0, t);
+        env.gain.linearRampToValueAtTime(0.3, t + 0.02);
+        env.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+        osc.connect(env); env.connect(sfxGain);
+        osc.start(t); osc.stop(t + 0.3);
+      });
+    }
+
+    // Fin de partida: melodía dramática
+    function playGameEnd(playerWon) {
+      if (!audioCtx || muted) return;
+      const notes = playerWon
+        ? [523.25, 659.25, 783.99, 1046.50, 1318.51]
+        : [523.25, 493.88, 440.00, 392.00,  349.23];
+      notes.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const env = audioCtx.createGain();
+        const t = audioCtx.currentTime + i * 0.18;
+        osc.type = playerWon ? 'triangle' : 'sawtooth';
+        osc.frequency.value = freq;
+        env.gain.setValueAtTime(0, t);
+        env.gain.linearRampToValueAtTime(0.35, t + 0.03);
+        env.gain.exponentialRampToValueAtTime(0.001, t + 0.55);
+        osc.connect(env); env.connect(sfxGain);
+        osc.start(t); osc.stop(t + 0.6);
+      });
+    }
+
+    // Subida de velocidad: sweep ascendente
+    function playSpeedUp() {
+      if (!audioCtx || muted) return;
+      const osc  = audioCtx.createOscillator();
+      const env  = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime + 0.25);
+      env.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      env.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+      osc.connect(env); env.connect(sfxGain);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.32);
+    }
+
+    // ── helpers ── 
     function resetBall(dir) {
       ball.x = W / 2; ball.y = H / 2;
       trail = [];
@@ -348,7 +650,7 @@
       const lbl = document.createElement('div');
       lbl.className = 'point-label';
       lbl.textContent = '+1';
-      lbl.style.color = scoredByPlayer ? '#64b4ff' : '#ff3c78';
+      lbl.style.color = scoredByPlayer ? '#bf1eff' : '#ff3c78';
       lbl.style.left  = scoredByPlayer ? (W * 0.18) + 'px' : (W * 0.72) + 'px';
       lbl.style.top   = (H * 0.38) + 'px';
       wrap.appendChild(lbl);
@@ -378,7 +680,7 @@
       }
     }
 
-    /* ── speed interval ── */
+    // ── speed interval ──
     function startSpeedInterval() {
       if (speedIntervalId) clearInterval(speedIntervalId);
       speedIntervalId = setInterval(() => {
@@ -389,11 +691,13 @@
         if (cur > 0.1) { const ratio = spd / cur; ball.vx *= ratio; ball.vy *= ratio; }
         updateSpeedUI();
         flashStatus('¡Velocidad aumentada!');
+        playSpeedUp();
       }, SPEED_INTERVAL);
     }
 
-    /* ── game flow ── */
+    // ── game flow ──
     function startGame() {
+      initAudio();
       scoreP = 0; scoreAI = 0;
       speedMultiplier = 1;
       padP.y  = H / 2 - PAD_H / 2;
@@ -417,8 +721,9 @@
       spawnParticles(
         scoredByPlayer ? W - 30 : 30,
         ball.y,
-        scoredByPlayer ? '#64b4ff' : '#ff3c78'
+        scoredByPlayer ? '#bf1eff' : '#ff3c78'
       );
+      playScore(scoredByPlayer);
       if (scoredByPlayer) { scoreP++; popScore('score-p'); }
       else                 { scoreAI++; popScore('score-ai'); }
       updateScoreUI();
@@ -439,6 +744,7 @@
       state = 'end';
       clearInterval(speedIntervalId);
       const playerWon = scoreP >= WIN_SCORE;
+      playGameEnd(playerWon);
       const msg  = playerWon ? '¡Has ganado!' : '¡Has perdido!';
       const sub  = playerWon ? scoreP + ' — ' + scoreAI : scoreAI + ' — ' + scoreP;
 
@@ -447,7 +753,6 @@
       document.getElementById('overlay').style.display    = 'flex';
       document.getElementById('restart-btn').style.display = 'none';
 
-      // Cuenta atrás y reinicio automático
       let secs = 3;
       const subEl = document.getElementById('overlay-sub');
       subEl.textContent = sub + '  —  Reiniciando en ' + secs + '…';
@@ -462,7 +767,9 @@
       }, 1000);
     }
 
-    /* ── physics ── */
+    // ── physics ──
+    let prevBallX = 0;
+
     function playerMove() {
       padP.y = Math.max(0, Math.min(H - PAD_H, mouseY - PAD_H / 2));
     }
@@ -476,7 +783,7 @@
       padAI.y  = Math.max(0, Math.min(H - PAD_H, padAI.y));
     }
 
-    function checkPadCollision(pad) {
+    function checkPadCollision(pad, isPlayer) {
       if (
         ball.x - BALL_R < pad.x + PAD_W &&
         ball.x + BALL_R > pad.x &&
@@ -489,21 +796,35 @@
         ball.vx = (ball.vx > 0 ? -1 : 1) * spd * Math.cos(angle);
         ball.vy = spd * Math.sin(angle);
         ball.x  = ball.vx > 0 ? pad.x + PAD_W + BALL_R + 1 : pad.x - BALL_R - 1;
+        playPaddleHit(isPlayer, spd);
       }
     }
 
+    let wasAboveWall = null;
     function update() {
       if (state !== 'playing') return;
       playerMove();
       aiMove();
       trail.push({ x: ball.x, y: ball.y });
       if (trail.length > TRAIL_MAX) trail.shift();
+
+      prevBallX = ball.x;
       ball.x += ball.vx;
       ball.y += ball.vy;
-      if (ball.y - BALL_R <= 0) { ball.y = BALL_R + 1;     ball.vy =  Math.abs(ball.vy); }
-      if (ball.y + BALL_R >= H) { ball.y = H - BALL_R - 1; ball.vy = -Math.abs(ball.vy); }
-      checkPadCollision(padP);
-      checkPadCollision(padAI);
+
+      // Wall hits con sonido
+      if (ball.y - BALL_R <= 0) {
+        ball.y = BALL_R + 1; ball.vy = Math.abs(ball.vy);
+        playWallHit();
+      }
+      if (ball.y + BALL_R >= H) {
+        ball.y = H - BALL_R - 1; ball.vy = -Math.abs(ball.vy);
+        playWallHit();
+      }
+
+      checkPadCollision(padP, true);
+      checkPadCollision(padAI, false);
+
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.x += p.vx; p.y += p.vy; p.vy += 0.12; p.life -= p.decay;
@@ -513,7 +834,7 @@
       if (ball.x > W) onPoint(true);
     }
 
-    /* ── trail color based on speed ── */
+    // ── trail color ──
     function trailColor(idx, len) {
       const t   = idx / len;
       const spd = speedMultiplier;
@@ -523,20 +844,18 @@
       return 'rgba(255,60,80,' + (t * 0.65) + ')';
     }
 
-    /* ── render ── */
+    // ── render ──
     function draw() {
       ctx.clearRect(0, 0, W, H);
       ctx.fillStyle = '#0a0a0a';
       ctx.fillRect(0, 0, W, H);
 
-      /* centre line */
       ctx.setLineDash([8, 8]);
       ctx.strokeStyle = 'rgba(255,255,255,0.12)';
       ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H); ctx.stroke();
       ctx.setLineDash([]);
 
-      /* trail */
       const spd = speedMultiplier;
       const trailActive = spd > 1.1 || Math.hypot(ball.vx, ball.vy) > BASE_SPEED * 1.1;
       if (trailActive && trail.length > 1) {
@@ -549,7 +868,6 @@
           ctx.fillStyle = trailColor(i, len);
           ctx.fill();
         }
-        /* motion smear at high speed */
         if (trail.length >= 2 && spd >= 2) {
           const t0 = trail[trail.length - 1];
           const grad = ctx.createLinearGradient(t0.x, t0.y, ball.x, ball.y);
@@ -566,7 +884,6 @@
         }
       }
 
-      /* paddles — purple glow at high speed */
       const glowAlpha = Math.max(0, (spd - 1.5) * 0.22);
       if (glowAlpha > 0) { ctx.shadowColor = '#bf1eff'; ctx.shadowBlur = 12 * glowAlpha * 4; }
       ctx.fillStyle = '#fff';
@@ -574,7 +891,6 @@
       ctx.fillRect(padAI.x, padAI.y, PAD_W, PAD_H);
       ctx.shadowBlur = 0;
 
-      /* ball — glow scales with speed */
       const ballGlow = Math.max(0, (spd - 1) * 6);
       if (ballGlow > 0) { ctx.shadowColor = spd < 2.5 ? '#bf1eff' : '#ff3c78'; ctx.shadowBlur = ballGlow; }
       ctx.beginPath();
@@ -583,7 +899,6 @@
       ctx.fill();
       ctx.shadowBlur = 0;
 
-      /* particles */
       for (const p of particles) {
         ctx.globalAlpha = Math.max(0, p.life);
         ctx.beginPath();
@@ -594,10 +909,9 @@
       ctx.globalAlpha = 1;
     }
 
-    /* ── main loop ── */
     function loop() { update(); draw(); animId = requestAnimationFrame(loop); }
 
-    /* ── input ── */
+    // ── input ──
     canvas.addEventListener('mousemove', e => {
       const rect = canvas.getBoundingClientRect();
       mouseY = (e.clientY - rect.top) * (H / rect.height);
